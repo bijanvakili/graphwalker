@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graph Explorer</title>
+
+    <!--
+    TODO: Use javascript module loader to handle library loading order based on dependencies
+    -->
+
+    <script type="text/javascript" src="./bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="./bower_components/underscore/underscore.js"></script>
+    <script type="text/javascript" src="./bower_components/backbone/backbone.js"></script>
+
+    <script type="text/javascript" src="./models/Settings.js"></script>
+    <script type="text/javascript" src="./models/GraphData.js"></script>
+    <script type="text/javascript" src="./views/DirectNeighborView.js"></script>
+    <script type="text/javascript" src="./routers/Navigator.js"></script>
+    <script type="text/javascript" src="./traverse.js"></script>
+
+    <!--
+    TODO
+    - Create CSS stylesheet
+    -->
+
+</head>
+<body onload="init();">
+    <div id="walker">
+        <canvas id="view" width="150" height="150"></canvas>
+    </div>
+</body>
+</html>

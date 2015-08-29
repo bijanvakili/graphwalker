@@ -1,0 +1,7 @@
+{
+  "graphDataFile": "bph_api_pretty.json",
+  "start": {
+    "app": "payments",
+    "model": "ChargeGroup"
+  }
+}

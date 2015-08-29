@@ -1,0 +1,9 @@
+{
+  "name": "graph_walker_ui",
+  "version": "0.0.1",
+  "dependencies": {
+    "jquery": "2.1.4",
+    "underscore": "1.8.3",
+    "backbone": "1.2.2"
+  }
+}

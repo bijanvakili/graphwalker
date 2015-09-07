@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var DirectNeighborView = Backbone.View.extend({
 
@@ -157,3 +157,5 @@ var DirectNeighborView = Backbone.View.extend({
         });
     },
 });
+
+module.exports = DirectNeighborView;

@@ -1,6 +1,11 @@
-"use strict";
+'use strict';
 
-var Navigator = Backbone.Router.extend({
+var Settings = require('app/models/Settings'),
+    GraphData = require('app/models/GraphData'),
+    DirectNeighborView = require('app/views/DirectNeighborView'),
+    Navigator;
+
+Navigator = Backbone.Router.extend({
 
     routes: {
       ":appName/:model": "moveToQualifiedModel",
@@ -52,3 +57,5 @@ var Navigator = Backbone.Router.extend({
         graph.fetch();
     },
 });
+
+module.exports = Navigator;

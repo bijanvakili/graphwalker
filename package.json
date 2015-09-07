@@ -5,9 +5,14 @@
   "devDependencies": {
     "bower": "1.5.2",
     "browserify": "11.0.1",
+    "aliasify": "1.7.2",
+    "remapify": "2.0.3",
     "node-static": "0.7.6"
   },
   "scripts": {
-    "postinstall": "bower install"
+    "postinstall": "bower install",
+    "prestart": "node build.js",
+    "build": "node build.js",
+    "clean": "rm -rf ./build"
   }
 }

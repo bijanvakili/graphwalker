@@ -1,6 +1,7 @@
 "use strict";
 
-var init,
+var Navigator = require('app/routers/Navigator'),
+    init;
 
 init = function(body) {
     window.router = new Navigator();
@@ -8,3 +9,4 @@ init = function(body) {
     Backbone.history.start();
 };
 
+window.init = init;

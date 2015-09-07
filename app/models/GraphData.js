@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 // TODO Fix bug if target app or model contain a typo, to show proper error
 
@@ -90,3 +90,5 @@ var GraphData = Backbone.Model.extend({
         return incomingNeighbours;
     }
 });
+
+module.exports = GraphData;

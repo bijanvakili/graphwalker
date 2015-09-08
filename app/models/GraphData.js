@@ -1,7 +1,5 @@
 'use strict';
 
-// TODO Fix bug if target app or model contain a typo, to show proper error
-
 var GraphData = Backbone.Model.extend({
 
     urlRoot: function () {
@@ -22,7 +20,11 @@ var GraphData = Backbone.Model.extend({
         });
     },
 
-    extractOutgoingRelations: function (appName, modelName) {
+    isExistingNode: function(appName, modelName) {
+        return _.isObject(this.getNode(appName, modelName));
+    },
+
+    getNode: function(appName, modelName) {
         var graphs,
             appGraph,
             modelNode;
@@ -33,16 +35,22 @@ var GraphData = Backbone.Model.extend({
         appGraph = _.find(graphs, function (graph) {
             return graph['app_name'] == appName;
         });
-        if (_.isNull(appGraph)) {
-            alert('Unable to find matching appName');
+        if (!_.isObject(appGraph)) {
+            return undefined;
         }
 
         modelNode = _.find(appGraph['models'], function (modelNode) {
             return modelNode['name'] == modelName;
         });
-        if (_.isNull(modelNode)) {
-            alert('Unable to find matching modelName');
+        if (!_.isObject(modelNode)) {
+            return undefined;
         }
+
+        return modelNode;
+    },
+
+    extractOutgoingRelations: function (appName, modelName) {
+        var modelNode = this.getNode(appName, modelName);
 
         // extract and transform the relations
         return this.transformRelations(modelNode['relations']);

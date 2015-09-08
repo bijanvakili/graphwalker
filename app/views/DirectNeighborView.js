@@ -39,11 +39,18 @@ var DirectNeighborView = Backbone.View.extend({
     render: function() {
         var graph,
             targetNode,
+            graphNode,
             incomingNeighbours,
             outgoingNeighbours;
 
         graph = this.model;
         targetNode = this.target;
+
+        // TODO replace this with proper error display
+        if (!graph.isExistingNode(targetNode['app'], targetNode['model'])) {
+            alert('Unable to find matching app,model');
+            return;
+        }
         incomingNeighbours = graph.getIncomingNeighbours(targetNode['app'], targetNode['model']);
         outgoingNeighbours = graph.getOutgoingNeigbours(targetNode['app'], targetNode['model']);
 

@@ -1,12 +1,15 @@
 'use strict';
 
-var browserify = require('browserify'),
+var parseArgs = require('minimist'),
+    browserify = require('browserify'),
+    watchify = require('watchify'),
     aliasify = require('aliasify'),
     remapify = require('remapify'),
     path = require('path'),
     fs = require('fs'),
     buildPath,
     bundlePath,
+    args,
     isDebug,
     b;
 
@@ -20,20 +23,48 @@ function onError(err) {
     process.exit(1);
 }
 
-function createBundle(bundlePath, browserifyIntance) {
-    browserifyIntance.bundle()
-                     .on('error', onError)
-                     .pipe(fs.createWriteStream(bundlePath));
+function createBundle(outfile, browserifyObj, withMonitor) {
+    var b,
+        _rebundle;
+
+    _rebundle = function() {
+        var outstream;
+
+        outstream = fs.createWriteStream(outfile);
+        if (withMonitor) {
+            outstream.on('close', function () {
+                console.error('Bundle updated.');
+            });
+        }
+        b.bundle()
+         .on('error', onError)
+         .pipe(outstream);
+    };
+
+
+    if (withMonitor) {
+        b = watchify(browserifyObj)
+            .on('update', function() {
+                _rebundle();
+            });
+    }
+    else {
+        b = browserifyObj;
+    }
+
+    _rebundle();
 }
 
-// TODO parse debug flag from command line
-isDebug = true;
+// parse command line
+args = parseArgs(process.argv.slice(2), {
+    boolean: ['debug']
+});
+isDebug = args['debug'];
 
 buildPath = path.join(__dirname, 'build');
 if (!fs.existsSync(buildPath)) {
     fs.mkdirSync(buildPath);
 }
-
 
 bundlePath = path.join(buildPath, 'bundle-globals.js');
 createBundle(
@@ -55,6 +86,8 @@ createBundle(
     bundlePath,
     browserify(['./app/main.js'], {
         debug: isDebug,
+        cache: {},
+        packageCache: {},
     }).plugin(remapify, [
         {
             src: "./app/**/*.js",
@@ -62,5 +95,6 @@ createBundle(
                 return path.join(__dirname, dirname, basename);
             }
         }
-    ])
+    ]),
+    isDebug
 );

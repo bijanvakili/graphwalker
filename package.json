@@ -4,15 +4,17 @@
   "description": "Graph traversal tool for the web browser",
   "devDependencies": {
     "bower": "1.5.2",
+    "minimist": "1.2.0",
     "browserify": "11.0.1",
+    "watchify": "3.4.0",
     "aliasify": "1.7.2",
     "remapify": "2.0.3",
     "node-static": "0.7.6"
   },
   "scripts": {
     "postinstall": "bower install",
-    "prestart": "node build.js",
     "build": "node build.js",
+    "build_monitor": "node build.js --debug",
     "clean": "rm -rf ./build",
     "todos": "grep -R TODO app/*"
   }

@@ -14,32 +14,47 @@ Navigator = Backbone.Router.extend({
 
     initialize: function() {
         this.settings = new Settings();
-        this.listenTo(this.settings, "change", this.onSettingsLoaded);
+    },
+
+    runWithSettings: function(func) {
+        // ensure the settings are loaded
+        if (!this.settings.has('graphDataFile')) {
+            this.listenToOnce(this.settings, "change", func);
+            this.settings.fetch({
+                error: function (model, response, options) {
+                    alert('Unable to load settings');
+                },
+            });
+        }
+        else {
+            _.bind(func, this, {})();
+        }
     },
 
     startNavigation: function() {
-        this.settings.fetch({
-            error: function (model, response, options) {
-                alert('Unable to load settings');
-            }
+        this.runWithSettings(function() {
+            var startNode = this.settings.get('start');
+
+            this.onMove(startNode['app'], startNode['model']);
         });
     },
 
-    onSettingsLoaded: function() {
-        var startNode;
-
-        startNode = this.settings.get('start');
-        this.moveToQualifiedModel(startNode['app'], startNode['model']);
+    moveToQualifiedModel: function(appName, modelName) {
+        this.runWithSettings(function() {
+            this.onMove(appName, modelName);
+        });
     },
 
     moveToUnqualifiedModel: function(modelName) {
-        var defaultApp;
+        this.runWithSettings(function() {
+            var defaultApp;
 
-        defaultApp = this.settings.get('start')['app'];
-        this.moveToQualifiedModel(defaultApp, modelName);
+            defaultApp = this.settings.get('start')['app'];
+            this.onMove(defaultApp, modelName);
+        });
     },
 
-    moveToQualifiedModel: function(appName, modelName) {
+    onMove: function(appName, modelName) {
         var graph;
 
         graph = new GraphData({

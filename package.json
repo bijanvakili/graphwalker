@@ -13,6 +13,7 @@
     "postinstall": "bower install",
     "prestart": "node build.js",
     "build": "node build.js",
-    "clean": "rm -rf ./build"
+    "clean": "rm -rf ./build",
+    "todos": "grep -R TODO app/*"
   }
 }

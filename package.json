@@ -1,6 +1,7 @@
 {
   "name": "graph_walker",
   "version": "0.0.1",
+  "license": "MIT",
   "description": "Graph traversal tool for the web browser",
   "devDependencies": {
     "bower": "1.5.2",

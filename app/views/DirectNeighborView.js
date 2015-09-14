@@ -67,8 +67,7 @@ var DirectNeighborView = Backbone.View.extend({
             textMetrics,
             canvasMargin,
             xIncoming,
-            xTargetNode,
-            xOutgoing;
+            xTargetNode;
 
         canvas = this.$el[0];
         if (!canvas || !canvas.getContext) {
@@ -91,12 +90,66 @@ var DirectNeighborView = Backbone.View.extend({
             height: textMetrics.height,
         };
 
-        // compute x positions of 3 columns (incoming -> model -> outgoing)
-        xIncoming = canvasMargin.width;
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
-        if (!_.isEmpty(outgoing)) {
-            var maxOutgoingTextWidth,
+
+        // draw central target node
+        this.drawModelNode(context, xTargetNode, canvasMargin.height, modelName);
+
+        // draw incoming neighbours
+        if (!_.isEmpty(incoming)) {
+            // draw incoming arcs
+            var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
+                yArcIncomingEnd,
+                maxIncomingTextWidth,
+                xSegment1,
+                xSegment2,
+                nodeHeight = this.getNodeHeight(),
+                margin = this.uiSettings.node.textMargin,
+                i = 0,
                 view = this;
+
+            xIncoming = canvasMargin.width;
+            this.drawStackFromNodeList(context, xIncoming, canvasMargin.height, incoming);
+
+            yArcIncomingEnd = canvasMargin.height + nodeHeight / 2;
+
+            maxIncomingTextWidth = _.max(
+                _.map(incoming, function (node) {
+                    return view.getTextDimensions(context, node['model']).width;
+                })
+            );
+            xSegment1 = xIncoming + maxIncomingTextWidth + margin * 2;
+            xSegment2 = xSegment1 + (xTargetNode - xSegment1) / 2.0;
+
+            _.each(incoming, function(node) {
+                var yArc,
+                    textMetrics;
+
+                textMetrics = view.getTextDimensions(context, node['model']);
+                yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+                view.drawSegmentedArc(
+                    context,
+                    xIncoming + textMetrics.width + margin * 2,
+                    yArc,
+                    xTargetNode,
+                    yArcIncomingEnd,
+                    xSegment1,
+                    xSegment2
+                );
+
+                i += 1;
+            });
+        }
+
+        // draw outgoing neighbours
+        if (!_.isEmpty(outgoing)) {
+            var i,
+                maxOutgoingTextWidth,
+                xOutgoing,
+                xArcOutgoingEnd,
+                view = this,
+                xSegment1,
+                xSegment2;
 
             maxOutgoingTextWidth = _.max(
                 _.map(outgoing, function (node) {
@@ -104,65 +157,51 @@ var DirectNeighborView = Backbone.View.extend({
                 })
             );
             xOutgoing = canvas.width - canvasMargin.width - maxOutgoingTextWidth;
+
+            // draw outgoing nodes
+            this.drawStackFromNodeList(context, xOutgoing, canvasMargin.height, outgoing);
+
+            // draw outgoing arcs
+            xArcOutgoingEnd = xTargetNode + textMetrics.width + margin * 2;
+            xSegment1 = xArcOutgoingEnd + 2/3 * (xOutgoing - xArcOutgoingEnd);
+            xSegment2 = xArcOutgoingEnd + 1/3 * (xOutgoing - xArcOutgoingEnd);
+            i = 0;
+
+            _.each(outgoing, function(node) {
+                var modelName = node['model'],
+                    yArc,
+                    textMetrics;
+
+                textMetrics = view.getTextDimensions(context, node['model']);
+                yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+
+                view.drawSegmentedArc(
+                    context,
+                    xOutgoing,
+                    yArc,
+                    xArcOutgoingEnd,
+                    yArcIncomingEnd,
+                    xSegment1,
+                    xSegment2
+                );
+
+                i += 1;
+            });
         }
+    },
 
-        // draw central target node
-        this.drawModelNode(context, xTargetNode, canvasMargin.height, modelName);
-
-        // draw incoming neighbours
-        this.drawStackFromNodeList(context, xIncoming, canvasMargin.height, incoming);
-
-        // draw outgoing neighbours
-        this.drawStackFromNodeList(context, xOutgoing, canvasMargin.height, outgoing);
-
-        // draw incoming arcs
-        var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
-            yArcIncomingEnd,
-            nodeHeight = this.getNodeHeight(),
-            margin = this.uiSettings.node.textMargin,
-            i = 0,
-            view = this;
-
-        yArcIncomingEnd = canvasMargin.height + nodeHeight / 2;
-        context.lineWidth = view.uiSettings.arc.lineWidth;
+    drawSegmentedArc: function(context, xStart, yStart, xEnd, yEnd, xSegment1, xSegment2) {
+        context.lineWidth = this.uiSettings.arc.lineWidth;
         context.strokeStyle = 'black';
-        _.each(incoming, function(node) {
-            var yArc,
-                textMetrics;
+        context.beginPath();
 
-            textMetrics = view.getTextDimensions(context, node['model']);
-            yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+        context.moveTo(xStart, yStart);
+        context.lineTo(xSegment1, yStart);
+        context.lineTo(xSegment2, yEnd);
+        context.lineTo(xEnd, yEnd);
 
-            context.beginPath();
-            context.moveTo(xIncoming + textMetrics.width + margin * 2, yArc);
-            context.lineTo(xTargetNode, yArcIncomingEnd);
-            context.stroke();
-            context.closePath();
-
-            i += 1;
-        });
-
-        var textMetricsTarget = view.getTextDimensions(context, modelName),
-            xArcOutgoingEnd;
-
-        xArcOutgoingEnd = xTargetNode + textMetrics.width + margin * 2;
-        i = 0;
-        _.each(outgoing, function(node) {
-            var modelName = node['model'],
-                yArc,
-                textMetrics;
-
-            textMetrics = view.getTextDimensions(context, node['model']);
-            yArc = canvasMargin.height + nodeHeight * (i + 0.5);
-
-            context.beginPath();
-            context.moveTo(xOutgoing, yArc);
-            context.lineTo(xArcOutgoingEnd, yArcIncomingEnd);
-            context.stroke();
-            context.closePath();
-
-            i += 1;
-        });
+        context.stroke();
+        context.closePath();
     },
 
     getTextDimensions: function(context, s) {

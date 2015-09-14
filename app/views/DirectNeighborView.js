@@ -11,7 +11,7 @@ var DirectNeighborView = Backbone.View.extend({
     // TODO MOVE to CSS or config settings
     uiSettings: {
         font: "24px serif",
-            canvasMargin: {
+        canvasMargin: {
             width: 10,
         },
         node: {
@@ -19,7 +19,10 @@ var DirectNeighborView = Backbone.View.extend({
             textMargin: 15,
             // TODO: Find a more accurate way to measure/handle text height
             textHeight: 15,
-        }
+        },
+        arc: {
+            lineWidth: 2,
+        },
     },
 
     reportError: function(message, response) {
@@ -111,6 +114,55 @@ var DirectNeighborView = Backbone.View.extend({
 
         // draw outgoing neighbours
         this.drawStackFromNodeList(context, xOutgoing, canvasMargin.height, outgoing);
+
+        // draw incoming arcs
+        var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
+            yArcIncomingEnd,
+            nodeHeight = this.getNodeHeight(),
+            margin = this.uiSettings.node.textMargin,
+            i = 0,
+            view = this;
+
+        yArcIncomingEnd = canvasMargin.height + nodeHeight / 2;
+        context.lineWidth = view.uiSettings.arc.lineWidth;
+        context.strokeStyle = 'black';
+        _.each(incoming, function(node) {
+            var yArc,
+                textMetrics;
+
+            textMetrics = view.getTextDimensions(context, node['model']);
+            yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+
+            context.beginPath();
+            context.moveTo(xIncoming + textMetrics.width + margin * 2, yArc);
+            context.lineTo(xTargetNode, yArcIncomingEnd);
+            context.stroke();
+            context.closePath();
+
+            i += 1;
+        });
+
+        var textMetricsTarget = view.getTextDimensions(context, modelName),
+            xArcOutgoingEnd;
+
+        xArcOutgoingEnd = xTargetNode + textMetrics.width + margin * 2;
+        i = 0;
+        _.each(outgoing, function(node) {
+            var modelName = node['model'],
+                yArc,
+                textMetrics;
+
+            textMetrics = view.getTextDimensions(context, node['model']);
+            yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+
+            context.beginPath();
+            context.moveTo(xOutgoing, yArc);
+            context.lineTo(xArcOutgoingEnd, yArcIncomingEnd);
+            context.stroke();
+            context.closePath();
+
+            i += 1;
+        });
     },
 
     getTextDimensions: function(context, s) {
@@ -152,9 +204,7 @@ var DirectNeighborView = Backbone.View.extend({
             return;
         }
 
-        nodeHeight = this.uiSettings.node.textHeight +
-            (this.uiSettings.node.borderWidth + this.uiSettings.node.textMargin) * 2;
-
+        nodeHeight = this.getNodeHeight();
         view = this;
         _.each(nodeList, function(node, index) {
             var yNode;
@@ -162,6 +212,11 @@ var DirectNeighborView = Backbone.View.extend({
             yNode = y + (nodeHeight * index);
             view.drawModelNode(context, x, yNode, node['model']);
         });
+    },
+
+    getNodeHeight: function() {
+        return this.uiSettings.node.textHeight +
+            (this.uiSettings.node.borderWidth + this.uiSettings.node.textMargin) * 2;
     },
 });
 

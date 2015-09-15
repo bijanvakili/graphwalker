@@ -22,6 +22,10 @@ var DirectNeighborView = Backbone.View.extend({
         },
         arc: {
             lineWidth: 2,
+            arrowHead: {
+                width: 24,
+                height: 16,
+            },
         },
     },
 
@@ -139,6 +143,9 @@ var DirectNeighborView = Backbone.View.extend({
 
                 i += 1;
             });
+
+            // draw aggregate arrow head
+            this.drawRightArrow(context, xTargetNode - this.uiSettings.arc.arrowHead.width, yArcIncomingEnd);
         }
 
         // draw outgoing neighbours
@@ -187,6 +194,9 @@ var DirectNeighborView = Backbone.View.extend({
 
                 i += 1;
             });
+
+            // draw outgoing arrow head
+            this.drawRightArrow(context, xSegment2 - this.uiSettings.arc.arrowHead.width, yArcIncomingEnd);
         }
     },
 
@@ -201,7 +211,23 @@ var DirectNeighborView = Backbone.View.extend({
         context.lineTo(xEnd, yEnd);
 
         context.stroke();
+    },
+
+    drawRightArrow: function(context, x, y) {
+        var w = this.uiSettings.arc.arrowHead.width,
+            h = this.uiSettings.arc.arrowHead.height;
+
+        context.lineWidth = this.uiSettings.arc.lineWidth;
+        context.strokeStyle = 'black';
+        context.fillStyle = 'black';
+
+        context.beginPath();
+        context.moveTo(x, y - h / 2.0);
+        context.lineTo(x, y + h / 2.0);
+        context.lineTo(x + w, y);
         context.closePath();
+        context.stroke();
+        context.fill();
     },
 
     getTextDimensions: function(context, s) {
@@ -229,7 +255,6 @@ var DirectNeighborView = Backbone.View.extend({
       context.rect(x, y, textMetrics.width + margin * 2, textMetrics.height + margin * 2);
       context.fill();
       context.stroke();
-      context.closePath();
 
       context.fillStyle = 'blue';
       context.fillText(modelName, x + margin, y + textMetrics.height + margin);

@@ -7,6 +7,7 @@
     "bower": "1.5.2",
     "minimist": "1.2.0",
     "browserify": "11.0.1",
+    "exorcist": "0.4.0",
     "watchify": "3.4.0",
     "aliasify": "1.7.2",
     "remapify": "2.0.3",

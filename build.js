@@ -2,6 +2,7 @@
 
 var parseArgs = require('minimist'),
     browserify = require('browserify'),
+    exorcist   = require('exorcist'),
     watchify = require('watchify'),
     aliasify = require('aliasify'),
     remapify = require('remapify'),
@@ -23,26 +24,30 @@ function onError(err) {
     process.exit(1);
 }
 
-function createBundle(outfile, browserifyObj, withMonitor) {
+function createBundle(outfile, browserifyObj, isDebug) {
     var b,
+        mapFilename,
         _rebundle;
 
+    mapFilename = outfile + '.map';
     _rebundle = function() {
-        var outstream;
+        var rebundler,
+            outstream;
 
+        rebundler = b.bundle().on('error', onError);
         outstream = fs.createWriteStream(outfile);
-        if (withMonitor) {
+
+        if (isDebug) {
             outstream.on('close', function () {
-                console.error('Bundle updated.');
+                console.log('Bundle updated.');
             });
+            rebundler = rebundler.pipe(exorcist(mapFilename));
         }
-        b.bundle()
-         .on('error', onError)
-         .pipe(outstream);
+
+        rebundler.pipe(outstream);
     };
 
-
-    if (withMonitor) {
+    if (isDebug) {
         b = watchify(browserifyObj)
             .on('update', function() {
                 _rebundle();

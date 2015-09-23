@@ -1,7 +1,7 @@
 'use strict';
 
 var Settings = require('app/models/Settings'),
-    GraphData = require('app/models/GraphData'),
+    Graph = require('app/models/GraphData').Graph,
     DirectNeighborView = require('app/views/DirectNeighborView'),
     Navigator;
 
@@ -57,7 +57,7 @@ Navigator = Backbone.Router.extend({
     onMove: function(appName, modelName) {
         var graph;
 
-        graph = new GraphData({
+        graph = new Graph({
             graphDataFile: this.settings.get("graphDataFile"),
         });
 
@@ -65,8 +65,8 @@ Navigator = Backbone.Router.extend({
             settings: this.settings,
             model: graph,
             target: {
-                app: appName,
-                model: modelName,
+                appName: appName,
+                modelName: modelName,
             },
         });
         graph.fetch();

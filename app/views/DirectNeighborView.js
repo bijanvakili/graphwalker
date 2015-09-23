@@ -45,23 +45,21 @@ var DirectNeighborView = Backbone.View.extend({
 
     render: function() {
         var graph,
-            targetNode,
-            graphNode,
-            incomingNeighbours,
-            outgoingNeighbours;
+            targetNode;
 
         graph = this.model;
-        targetNode = this.target;
-
+        targetNode = graph.findVertex(this.target);
         // TODO replace this with proper error display
-        if (!graph.isExistingNode(targetNode['app'], targetNode['model'])) {
+        if (_.isUndefined(targetNode)) {
             alert('Unable to find matching app,model');
             return;
         }
-        incomingNeighbours = graph.getIncomingNeighbours(targetNode['app'], targetNode['model']);
-        outgoingNeighbours = graph.getOutgoingNeigbours(targetNode['app'], targetNode['model']);
 
-        this.drawLocalModelGraph(targetNode, incomingNeighbours, outgoingNeighbours);
+        this.drawLocalModelGraph(
+            targetNode,
+            graph.getIncomingNeighbors(targetNode),
+            graph.getOutgoingNeighbors(targetNode)
+        );
     },
 
     drawLocalModelGraph: function(model, incoming, outgoing) {
@@ -86,7 +84,7 @@ var DirectNeighborView = Backbone.View.extend({
         context = canvas.getContext('2d');
         context.font = this.uiSettings.font;
 
-        modelName = model['model'];
+        modelName = model.get('modelName');
         textMetrics = this.getTextDimensions(context, modelName);
 
         canvasMargin = {
@@ -119,7 +117,7 @@ var DirectNeighborView = Backbone.View.extend({
 
             maxIncomingTextWidth = _.max(
                 _.map(incoming, function (node) {
-                    return view.getTextDimensions(context, node['model']).width;
+                    return view.getTextDimensions(context, node.get('modelName')).width;
                 })
             );
             xSegment1 = xIncoming + maxIncomingTextWidth + margin * 2;
@@ -129,7 +127,7 @@ var DirectNeighborView = Backbone.View.extend({
                 var yArc,
                     textMetrics;
 
-                textMetrics = view.getTextDimensions(context, node['model']);
+                textMetrics = view.getTextDimensions(context, node.get('modelName'));
                 yArc = canvasMargin.height + nodeHeight * (i + 0.5);
                 view.drawSegmentedArc(
                     context,
@@ -160,7 +158,7 @@ var DirectNeighborView = Backbone.View.extend({
 
             maxOutgoingTextWidth = _.max(
                 _.map(outgoing, function (node) {
-                    return view.getTextDimensions(context, node['model']).width;
+                    return view.getTextDimensions(context, node.get('modelName')).width;
                 })
             );
             xOutgoing = canvas.width - canvasMargin.width - maxOutgoingTextWidth;
@@ -175,11 +173,11 @@ var DirectNeighborView = Backbone.View.extend({
             i = 0;
 
             _.each(outgoing, function(node) {
-                var modelName = node['model'],
+                var modelName = node.get('modelName'),
                     yArc,
                     textMetrics;
 
-                textMetrics = view.getTextDimensions(context, node['model']);
+                textMetrics = view.getTextDimensions(context, node.get('modelName'));
                 yArc = canvasMargin.height + nodeHeight * (i + 0.5);
 
                 view.drawSegmentedArc(
@@ -274,7 +272,7 @@ var DirectNeighborView = Backbone.View.extend({
             var yNode;
 
             yNode = y + (nodeHeight * index);
-            view.drawModelNode(context, x, yNode, node['model']);
+            view.drawModelNode(context, x, yNode, node.get('modelName'));
         });
     },
 

@@ -1,93 +1,119 @@
 'use strict';
 
-var GraphData = Backbone.Model.extend({
+var Graph,
+    Vertex,
+    Vertices,
+    Edge,
+    Edges;
+
+
+Vertex = Backbone.Model.extend({
+    defaults: {
+        modelName: "",
+        appName: "",
+        internalAppName: "",
+    },
+
+    isEqual: function(query) {
+        return this.get('appName') == query['appName'] &&
+            this.get('modelName') == query['modelName'];
+    },
+});
+
+
+Vertices = Backbone.Collection.extend({
+    model: Vertex,
+
+    findOrCreateVertex: function(query) {
+        var vertex;
+
+        vertex = _.find(this.models, function (vertex) {
+            return vertex.isEqual(query);
+        });
+        if (_.isUndefined(vertex)) {
+            vertex = this.add(new Vertex(query));
+        }
+
+        return vertex;
+    }
+});
+
+
+Edge = Backbone.Model.extend({
+    defaults: {
+        source: null,
+        dest: null,
+        type: "ForeignKey",
+    },
+
+    isInheritanceRelation: function() {
+        return this.attributes['type'] == 'inheritance';
+    },
+
+});
+
+
+Edges = Backbone.Collection.extend({
+    model: Edge,
+});
+
+
+Graph = Backbone.Model.extend({
+
+    defaults: {
+        graphDataFile: null,
+        vertices: new Vertices(),
+        edges: new Edges(),
+    },
 
     urlRoot: function () {
         return 'data/' + this.get("graphDataFile");
     },
 
-    isInheritanceRelation: function(relation) {
-        return relation['type'] == 'inheritance';
-    },
+    parse: function(response, options) {
+        var vertices,
+            edges;
 
-    transformRelations: function(relations) {
-        return _.map(relations, function (relation) {
-            return {
-                app: relation['target_app'],
-                model: relation['target'],
-                type: relation['type'],
-            }
+        // parse known vertices
+        vertices = new Vertices();
+        _.each(response['graphs'], function (graph) {
+            _.each(graph['models'], function (model) {
+                vertices.add({
+                    internalAppName: model['app_name'],
+                    appName: graph['app_name'],
+                    modelName: model['name']
+                });
+            });
         });
-    },
 
-    isExistingNode: function(appName, modelName) {
-        return _.isObject(this.getNode(appName, modelName));
-    },
-
-    getNode: function(appName, modelName) {
-        var graphs,
-            appGraph,
-            modelNode;
-
-        graphs = this.get('graphs');
-
-        // locate the model node
-        appGraph = _.find(graphs, function (graph) {
-            return graph['app_name'] == appName;
-        });
-        if (!_.isObject(appGraph)) {
-            return undefined;
-        }
-
-        modelNode = _.find(appGraph['models'], function (modelNode) {
-            return modelNode['name'] == modelName;
-        });
-        if (!_.isObject(modelNode)) {
-            return undefined;
-        }
-
-        return modelNode;
-    },
-
-    extractOutgoingRelations: function (appName, modelName) {
-        var modelNode = this.getNode(appName, modelName);
-
-        // extract and transform the relations
-        return this.transformRelations(modelNode['relations']);
-    },
-
-    getOutgoingNeigbours: function (appName, modelName) {
-        var outgoingNeighbours;
-
-        outgoingNeighbours = this.extractOutgoingRelations(appName, modelName);
-
-        // inherited modules must be excluded
-        outgoingNeighbours = _.reject(outgoingNeighbours, this.isInheritanceRelation);
-        return outgoingNeighbours;
-    },
-
-    getIncomingNeighbours: function (appName, modelName) {
-        var graphs,
-            inheritedNeighbours,
-            incomingNeighbours = [],
-            mangledAppName;
-
-        incomingNeighbours = this.extractOutgoingRelations(appName, modelName);
-        incomingNeighbours = _.filter(incomingNeighbours, this.isInheritanceRelation);
-
-        // traverse the graph to determine all incoming nodes
-        graphs = this.get('graphs');
-
-        // TODO find out why this suffix is required
-        mangledAppName = appName + '_models_models';
-
-        _.each(graphs, function (graph) {
+        // parse edges
+        edges = new Edges();
+        _.each(response['graphs'], function (graph) {
             _.each(graph['models'], function (model) {
                 _.each(model['relations'], function (relation) {
-                    if (relation['target_app'] == mangledAppName && relation['target'] == modelName) {
-                        incomingNeighbours.push({
-                            app: graph['app_name'],
-                            model: model['name'],
+                    var sourceVertex,
+                        destVertex;
+
+                    sourceVertex = vertices.findWhere({
+                        appName: graph['app_name'],
+                        modelName: model['name']
+                    });
+                    destVertex = vertices.findWhere({
+                        internalAppName: relation['target_app'],
+                        modelName: relation['target'],
+                    });
+
+                    if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
+                        // invert direction for inheritance
+                        if (relation['type'] == 'inheritance') {
+                            var temp = sourceVertex;
+                            sourceVertex = destVertex;
+                            destVertex = temp;
+                        }
+
+                        edges.add({
+                            source: sourceVertex,
+                            dest: destVertex,
                             type: relation['type'],
                         });
                     }
@@ -95,8 +121,54 @@ var GraphData = Backbone.Model.extend({
             });
         });
 
-        return incomingNeighbours;
-    }
+        return {
+            vertices: vertices,
+            edges: edges,
+            graphDataFile: this.graphDataFile,
+        };
+    },
+
+    findVertex: function(query) {
+        return this.get('vertices').findWhere(query);
+    },
+
+    getOutgoingNeighbors: function (vertex) {
+        return this.getNeighbors(vertex, false);
+    },
+
+    getIncomingNeighbors: function (vertex) {
+        return this.getNeighbors(vertex, true);
+    },
+
+    getNeighbors: function(vertex, isIncoming) {
+        var neighbors = [];
+
+        _.each(this.get('edges').models, function(edge) {
+            var attrMatch,
+                attrCollect;
+
+            if (isIncoming) {
+                attrMatch = 'dest';
+                attrCollect = 'source';
+            }
+            else {
+                attrMatch = 'source';
+                attrCollect = 'dest';
+            }
+
+            if (edge.get(attrMatch).isEqual(vertex.attributes)) {
+                neighbors.push(edge.get(attrCollect));
+            }
+        });
+
+        return neighbors;
+    },
 });
 
-module.exports = GraphData;
+module.exports = {
+    Vertex,
+    Vertices,
+    Edge,
+    Edges,
+    Graph,
+}

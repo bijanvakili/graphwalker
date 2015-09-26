@@ -24,6 +24,18 @@ function onError(err) {
     process.exit(1);
 }
 
+
+function makeBowerPath(library_name, optional_subfolder) {
+    var path = "./bower_components/" + library_name + "/";
+
+    if (optional_subfolder != undefined) {
+        path = path + optional_subfolder + "/";
+    }
+
+    // TODO add argument to use minified version
+    return path + library_name + ".js";
+}
+
 function createBundle(outfile, browserifyObj, isDebug) {
     var b,
         mapFilename,
@@ -78,9 +90,9 @@ createBundle(
         debug: isDebug,
     }).transform(aliasify, {
         aliases: {
-            "underscore": "./bower_components/underscore/underscore.js",
-            "jquery": "./bower_components/jquery/dist/jquery.js",
-            "backbone": "./bower_components/backbone/backbone.js"
+            'underscore': makeBowerPath('underscore'),
+            'jquery': makeBowerPath('jquery', 'dist'),
+            'backbone': makeBowerPath('backbone'),
         },
         verbose: false
     })

@@ -17,7 +17,8 @@
     "postinstall": "bower install",
     "build": "node build.js",
     "build_monitor": "node build.js --debug",
-    "clean": "rm -rf ./build",
+    "clean": "rm -rf ./build ./bower_components ./node_modules",
+    "partial_clean": "rm -rf ./build",
     "todos": "grep -R TODO app/*"
   }
 }

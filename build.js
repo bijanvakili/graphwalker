@@ -6,6 +6,7 @@ var parseArgs = require('minimist'),
     watchify = require('watchify'),
     aliasify = require('aliasify'),
     remapify = require('remapify'),
+    stringify = require('stringify'),
     path = require('path'),
     fs = require('fs'),
     buildPath,
@@ -101,17 +102,31 @@ createBundle(
 bundlePath = path.join(buildPath, 'bundle-app.js');
 createBundle(
     bundlePath,
-    browserify(['./app/main.js'], {
+    browserify([], {
         debug: isDebug,
         cache: {},
         packageCache: {},
-    }).plugin(remapify, [
+    }).transform(
+        stringify({
+            extentions: ['.tpl'],
+            minify: false, // TODO change htis once we add minification
+        }), {
+            global: true,
+        }
+    ).plugin(remapify, [
         {
             src: "./app/**/*.js",
             filter: function(alias, dirname, basename) {
                 return path.join(__dirname, dirname, basename);
             }
+        },
+        {
+            src: "./app/**/*.tpl",
+            filter: function(alias, dirname, basename) {
+                return path.join(__dirname, dirname, basename);
+            }
         }
-    ]),
+    ])
+    .add('./app/main.js'),
     isDebug
 );

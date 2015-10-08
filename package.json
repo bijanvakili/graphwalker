@@ -11,6 +11,7 @@
     "watchify": "3.4.0",
     "aliasify": "1.7.2",
     "remapify": "2.0.3",
+    "stringify": "3.1.0",
     "node-static": "0.7.6"
   },
   "scripts": {

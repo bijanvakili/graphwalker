@@ -2,6 +2,12 @@
 
 var ExportedStyles = {
 
+    canvasMargin: {
+        top: 10,
+        left: 10,
+        right: 10,
+    },
+
     vertexRect: {
         fill: 'yellow',
         stroke: 'black',
@@ -12,6 +18,10 @@ var ExportedStyles = {
         fontFamily: 'serif',
         fontSize: 24,
         fill: 'blue',
+
+        // TODO: Find a more accurate way to measure/handle text height
+        textHeight: 15,
+        textMargin: 15,
     },
 
     arcLine: {
@@ -19,8 +29,11 @@ var ExportedStyles = {
         stroke: 'black',
     },
 
-    arcArrow: {
-        width: 2,
+    arcTriangleArrow: {
+        width: 24,
+        height: 16,
+        angle: 90,
+
         stroke: 'black',
         fill: 'black'
     },

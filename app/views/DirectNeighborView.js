@@ -8,29 +8,6 @@ var DirectNeighborView = Backbone.View.extend({
       "graphLoaded": "onGraphLoaded",
     },
 
-    // TODO MOVE to CSS or config settings
-    uiSettings: {
-        font: {
-            size: 24, // in pixels
-            family: "serif",
-        },
-        canvasMargin: {
-            width: 10,
-        },
-        node: {
-            borderWidth: 5,
-            textMargin: 15,
-            // TODO: Find a more accurate way to measure/handle text height
-            textHeight: 15,
-        },
-        arc: {
-            arrowHead: {
-                width: 24,
-                height: 16,
-            },
-        },
-    },
-
     reportError: function(message, response) {
         alert(message);
         console.log(response.responseText);
@@ -71,11 +48,13 @@ var DirectNeighborView = Backbone.View.extend({
             textMargin,
             textMetrics,
             canvasMargin,
+            nodeHeight,
             xIncoming,
-            xTargetNode;
+            xTargetNode,
+            yArcEnd,
+            arrowHeadWidth;
 
         canvas = new fabric.Canvas(this.$el[0], {
-            // TODO: resize based on data
             width: window.innerWidth,
             height: window.innerHeight,
         });
@@ -87,34 +66,31 @@ var DirectNeighborView = Backbone.View.extend({
         // TODO remove this hack
         modelName = model.get('modelName');
         textMetrics = this.getTextDimensions(canvas, modelName);
-        textMargin = this.uiSettings.node.textMargin
+        textMargin = FabricStyles.getStyles('vertexText').textMargin;
 
-        canvasMargin = {
-            width: this.uiSettings.canvasMargin.width,
-            height: textMetrics.height,
-        };
-
+        canvasMargin = FabricStyles.getStyles('canvasMargin');
+        nodeHeight = this.getNodeHeight();
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
+        yArcEnd = canvasMargin.top + nodeHeight / 2;
+        arrowHeadWidth = FabricStyles.getStyles('arcTriangleArrow').width;
 
         // draw central target node
-        this.drawModelNode(canvas, xTargetNode, canvasMargin.height, modelName);
+        this.drawModelNode(canvas, xTargetNode, canvasMargin.top, modelName);
 
         // draw incoming neighbours
         if (!_.isEmpty(incoming)) {
             // draw incoming arcs
             var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
-                yArcIncomingEnd,
                 maxIncomingTextWidth,
                 xSegment1,
                 xSegment2,
-                nodeHeight = this.getNodeHeight(),
                 i = 0,
                 view = this;
 
-            xIncoming = canvasMargin.width;
-            this.drawStackFromNodeList(canvas, xIncoming, canvasMargin.height, incoming);
+            xIncoming = canvasMargin.left;
+            this.drawStackFromNodeList(canvas, xIncoming, canvasMargin.top, incoming);
 
-            yArcIncomingEnd = canvasMargin.height + nodeHeight / 2;
+
 
             maxIncomingTextWidth = _.max(
                 _.map(incoming, function (node) {
@@ -129,13 +105,13 @@ var DirectNeighborView = Backbone.View.extend({
                     textMetrics;
 
                 textMetrics = view.getTextDimensions(canvas, node.get('modelName'));
-                yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+                yArc = canvasMargin.top + nodeHeight * (i + 0.5);
                 view.drawSegmentedArc(
                     canvas,
                     xIncoming + textMetrics.width + textMargin * 2,
                     yArc,
                     xTargetNode,
-                    yArcIncomingEnd,
+                    yArcEnd,
                     xSegment1,
                     xSegment2
                 );
@@ -144,7 +120,7 @@ var DirectNeighborView = Backbone.View.extend({
             });
 
             // draw aggregate arrow head
-            this.drawRightArrow(canvas, xTargetNode - this.uiSettings.arc.arrowHead.width, yArcIncomingEnd);
+            this.drawRightArrow(canvas, xTargetNode - arrowHeadWidth, yArcEnd);
         }
 
         // draw outgoing neighbours
@@ -158,18 +134,18 @@ var DirectNeighborView = Backbone.View.extend({
                 xSegment1,
                 xSegment2;
 
-            rectBorderWidth = this.uiSettings.node.borderWidth
+            rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
             maxOutgoingTextWidth = _.max(
                 _.map(outgoing, function (node) {
                     return view.getTextDimensions(canvas, node.get('modelName')).width;
                 })
             );
 
-            xOutgoing = canvas.width - canvasMargin.width - maxOutgoingTextWidth
+            xOutgoing = canvas.width - canvasMargin.right - maxOutgoingTextWidth
                 - (textMargin * 2) - (rectBorderWidth * 2);
 
             // draw outgoing nodes
-            this.drawStackFromNodeList(canvas, xOutgoing, canvasMargin.height, outgoing);
+            this.drawStackFromNodeList(canvas, xOutgoing, canvasMargin.top, outgoing);
 
             // draw outgoing arcs
             xArcOutgoingEnd = xTargetNode + textMetrics.width + textMargin * 2;
@@ -183,14 +159,14 @@ var DirectNeighborView = Backbone.View.extend({
                     textMetrics;
 
                 textMetrics = view.getTextDimensions(canvas, node.get('modelName'));
-                yArc = canvasMargin.height + nodeHeight * (i + 0.5);
+                yArc = canvasMargin.top + nodeHeight * (i + 0.5);
 
                 view.drawSegmentedArc(
                     canvas,
                     xOutgoing,
                     yArc,
                     xArcOutgoingEnd,
-                    yArcIncomingEnd,
+                    yArcEnd,
                     xSegment1,
                     xSegment2
                 );
@@ -199,7 +175,7 @@ var DirectNeighborView = Backbone.View.extend({
             });
 
             // draw outgoing arrow head
-            this.drawRightArrow(canvas, xSegment2 - this.uiSettings.arc.arrowHead.width, yArcIncomingEnd);
+            this.drawRightArrow(canvas, xSegment2 - arrowHeadWidth, yArcEnd);
         }
     },
 
@@ -220,28 +196,24 @@ var DirectNeighborView = Backbone.View.extend({
     },
 
     drawRightArrow: function(canvas, x, y) {
-        var w = this.uiSettings.arc.arrowHead.width,
-            h = this.uiSettings.arc.arrowHead.height,
+        var height,
             pathCommands,
-            arrowPath;
-            //arrowTriangle;
+            arrowPath,
+            arrowTriangle,
+            arcLineWidth;
 
-        // TODO fix to account for rotation
-//        arrowTriangle = new fabric.Triangle({
-//            left: x,
-//            top: y - h / 2.0,
-//            width: w,
-//            height: h,
-//            angle: 90,
-//        });
-//        canvas.add(arrowTriangle);
+        // TODO fix positions so that arrow tip is directly on line
+        height = FabricStyles.getStyles('arcTriangleArrow').height;
+        arcLineWidth = FabricStyles.getStyles('arcLine').strokeWidth;
+        arrowTriangle = new fabric.Triangle({
+            left: x,
+            top: y - (height / 2.0) - (arcLineWidth / 2.0),
 
-        pathCommands = 'M ' + x + ' ' + (y - h / 2.0) +
-            ' V ' +  (y + h / 2.0) +
-            ' L ' + (x + w) + ' ' + y +
-            ' Z';
-        arrowPath = new fabric.Path(pathCommands, { FabricStyles: ['arcArrow'] } );
-        canvas.add(arrowPath);
+            FabricStyles: ['arcTriangleArrow']
+        });
+        // HACK: Redo options since Triangle.initialize() ignores the original styles
+        arrowTriangle.setOptions({FabricStyles: ['arcTriangleArrow']});
+        canvas.add(arrowTriangle);
     },
 
     getTextDimensions: function(canvas, s) {
@@ -249,14 +221,13 @@ var DirectNeighborView = Backbone.View.extend({
             fontDescription;
 
         // TODO remove this hack
-        fontSettings = this.uiSettings.font;
-        fontDescription = fontSettings.size + 'px ' + fontSettings.family
+        fontSettings = FabricStyles.getStyles('vertexText');
+        fontDescription = fontSettings.fontSize + 'px ' + fontSettings.fontFamily;
         canvas.getContext().font = fontDescription;
 
         return {
             width: canvas.getContext().measureText(s).width,
-            // TODO: Find a more accurate way to measure/handle text height
-            height: this.uiSettings.node.textHeight,
+            height: fontSettings.textHeight,
         }
     },
 
@@ -270,10 +241,10 @@ var DirectNeighborView = Backbone.View.extend({
 
       textMetrics = this.getTextDimensions(canvas, modelName);
 
-      // TODO: move static properties into styles (only 'width' is dynamic)
-      margin = this.uiSettings.node.textMargin;
-      rectBorderWidth = this.uiSettings.node.borderWidth;
+      margin = FabricStyles.getStyles('vertexText').textMargin;
+      rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
 
+      // TODO: move static properties into styles (only 'width' is dynamic)
       rect = new fabric.Rect({
         width: textMetrics.width + margin * 2,
         height: textMetrics.height + margin * 2,
@@ -314,8 +285,11 @@ var DirectNeighborView = Backbone.View.extend({
     },
 
     getNodeHeight: function() {
-        return this.uiSettings.node.textHeight +
-            (this.uiSettings.node.borderWidth + this.uiSettings.node.textMargin) * 2;
+        var rectStyle = FabricStyles.getStyles('vertexRect'),
+            textStyle = FabricStyles.getStyles('vertexText');
+
+        return textStyle.textHeight +
+            (rectStyle.strokeWidth + textStyle.textMargin) * 2;
     },
 });
 

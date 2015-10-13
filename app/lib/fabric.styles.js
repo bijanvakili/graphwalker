@@ -57,7 +57,12 @@
         },
 
         getStyles: function(styles) {
-            return _.map(styles, function(style) { return this._allStyles[style]; }, this)
+            if (_.isArray(styles)) {
+                return _.map(styles, function(style) { return this._allStyles[style]; }, this);
+            }
+            else {
+                return this._allStyles[styles];
+            }
         }
     };
 

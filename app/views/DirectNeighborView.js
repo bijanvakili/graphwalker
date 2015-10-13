@@ -24,7 +24,6 @@ var DirectNeighborView = Backbone.View.extend({
             textHeight: 15,
         },
         arc: {
-            lineWidth: 2,
             arrowHead: {
                 width: 24,
                 height: 16,
@@ -210,8 +209,7 @@ var DirectNeighborView = Backbone.View.extend({
             lineOptions;
 
         lineOptions = {
-           strokeWidth: this.uiSettings.arc.lineWidth,
-           stroke: 'black',
+           FabricStyles: ['arcLine']
         };
         arcLines.push(new fabric.Line([xStart, yStart, xSegment1, yStart], lineOptions));
         arcLines.push(new fabric.Line([xSegment1, yStart, xSegment2, yEnd], lineOptions));
@@ -242,12 +240,7 @@ var DirectNeighborView = Backbone.View.extend({
             ' V ' +  (y + h / 2.0) +
             ' L ' + (x + w) + ' ' + y +
             ' Z';
-        arrowPath = new fabric.Path(pathCommands, {
-            width: this.uiSettings.arc.lineWidth,
-            stroke: 'black',
-            fill: 'black'
-        });
-
+        arrowPath = new fabric.Path(pathCommands, { FabricStyles: ['arcArrow'] } );
         canvas.add(arrowPath);
     },
 
@@ -277,7 +270,7 @@ var DirectNeighborView = Backbone.View.extend({
 
       textMetrics = this.getTextDimensions(canvas, modelName);
 
-      // TODO: shift colors and styles into CSS or config settings
+      // TODO: move static properties into styles (only 'width' is dynamic)
       margin = this.uiSettings.node.textMargin;
       rectBorderWidth = this.uiSettings.node.borderWidth;
 
@@ -285,18 +278,13 @@ var DirectNeighborView = Backbone.View.extend({
         width: textMetrics.width + margin * 2,
         height: textMetrics.height + margin * 2,
 
-        fill: 'yellow',
-        stroke: 'black',
-        strokeWidth: rectBorderWidth,
+        FabricStyles: ['vertexRect']
       });
       text = new fabric.Text(modelName, {
         left: margin,
         top: margin,
 
-        fontFamily: this.uiSettings.font.family,
-        fontSize: this.uiSettings.font.size,
-
-        fill: 'blue',
+        FabricStyles: ['vertexText']
       });
 
       group = new fabric.Group([rect, text], {

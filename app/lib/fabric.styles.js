@@ -2,18 +2,17 @@
 
   if (typeof define === 'function' && define.amd) {
     define(['underscore', 'fabric', 'exports'], function(_, fabric, exports) {
-        root.FabricStyles = factory(root, exports, _, fabric.fabric);
+        root.FabricStyles = factory(root, exports, _, fabric);
     });
   }
   else if (typeof exports !== 'undefined') {
     var _ = require('underscore'),
         fabric = require('fabric');
 
-    module.exports = factory(root, exports, _, fabric.fabric);
+    module.exports = factory(root, exports, _, fabric);
   }
   else {
     // browser global
-    // TODO fix call to fabric sub-object
     root.FabricStyles = factory(root, {}, root._, root.fabric);
   }
 }(this, function(root, FabricStyles, _, fabric) {
@@ -41,6 +40,10 @@
         return true;
     };
 
+    if (_.has(fabric, 'fabric')) {
+        fabric = fabric.fabric;
+    }
+
     if (!isValidFabricVersion(fabric)) {
         alert('fabric-style requires fabric v' + MIN_FABRIC_VERSION);
         return;
@@ -66,30 +69,27 @@
         }
     };
 
-    // override setOptions to allow styling injection
-    oldSetOptions = fabric.Object.prototype.setOptions;
+    _.extend(fabric.Object.prototype, {
 
-    newSetOptions = function(options) {
-        var modifiedOptions;
+        withStyles: function(styles) {
+            var unmergedStyles,
+                modifiedOptions;
 
-        if (_.has(options, 'FabricStyles')) {
-            var unmergedStyles = FabricStyles.getStyles(options['FabricStyles']);
-            modifiedOptions = _.extend(
-                _.reduce(
+            unmergedStyles = FabricStyles.getStyles(styles);
+            if (_.isArray(unmergedStyles)) {
+                modifiedOptions = _.reduce(
                     unmergedStyles,
                     function (memo, styleData) { return _.extend(memo, styleData); }
-                ),
-                _.omit(options, 'FabricStyles')
-            );
-        }
-        else {
-            modifiedOptions = options;
-        }
+                );
+            }
+            else {
+                modifiedOptions = unmergedStyles;
+            }
 
-        _.bind(oldSetOptions, this)(modifiedOptions);
-    }
-
-    fabric.Object.prototype.setOptions = newSetOptions;
+            this.setOptions(modifiedOptions);
+            return this;
+        }
+    });
 
     return FabricStyles;
 }));

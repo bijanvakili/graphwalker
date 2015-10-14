@@ -187,9 +187,9 @@ var DirectNeighborView = Backbone.View.extend({
         lineOptions = {
            FabricStyles: ['arcLine']
         };
-        arcLines.push(new fabric.Line([xStart, yStart, xSegment1, yStart], lineOptions));
-        arcLines.push(new fabric.Line([xSegment1, yStart, xSegment2, yEnd], lineOptions));
-        arcLines.push(new fabric.Line([xSegment2, yEnd, xEnd, yEnd], lineOptions));
+        arcLines.push(new fabric.Line([xStart, yStart, xSegment1, yStart]).withStyles('arcLine'));
+        arcLines.push(new fabric.Line([xSegment1, yStart, xSegment2, yEnd]).withStyles('arcLine'));
+        arcLines.push(new fabric.Line([xSegment2, yEnd, xEnd, yEnd]).withStyles('arcLine'));
 
         arcGroup = new fabric.Group(arcLines);
         canvas.add(arcGroup);
@@ -208,11 +208,7 @@ var DirectNeighborView = Backbone.View.extend({
         arrowTriangle = new fabric.Triangle({
             left: x,
             top: y - (height / 2.0) - (arcLineWidth / 2.0),
-
-            FabricStyles: ['arcTriangleArrow']
-        });
-        // HACK: Redo options since Triangle.initialize() ignores the original styles
-        arrowTriangle.setOptions({FabricStyles: ['arcTriangleArrow']});
+        }).withStyles('arcTriangleArrow');
         canvas.add(arrowTriangle);
     },
 
@@ -248,15 +244,11 @@ var DirectNeighborView = Backbone.View.extend({
       rect = new fabric.Rect({
         width: textMetrics.width + margin * 2,
         height: textMetrics.height + margin * 2,
-
-        FabricStyles: ['vertexRect']
-      });
+      }).withStyles('vertexRect');
       text = new fabric.Text(modelName, {
         left: margin,
         top: margin,
-
-        FabricStyles: ['vertexText']
-      });
+      }).withStyles('vertexText');
 
       group = new fabric.Group([rect, text], {
         left: x,

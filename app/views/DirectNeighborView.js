@@ -49,11 +49,13 @@ var DirectNeighborView = Backbone.View.extend({
             textMetrics,
             canvasMargin,
             nodeHeight,
+            rectBorderWidth,
             xIncoming,
             xTargetNode,
-            yArcEnd,
-            arrowHeadWidth;
+            yArcEnd;
 
+        // TODO patch Canvas._setImageSmoothing() to avoid deprecation warning based on the discussion here
+        // https://github.com/kangax/fabric.js/issues/2047
         canvas = new fabric.Canvas(this.$el[0], {
             width: window.innerWidth,
             height: window.innerHeight,
@@ -70,9 +72,9 @@ var DirectNeighborView = Backbone.View.extend({
 
         canvasMargin = FabricStyles.getStyles('canvasMargin');
         nodeHeight = this.getNodeHeight();
+        rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
         yArcEnd = canvasMargin.top + nodeHeight / 2;
-        arrowHeadWidth = FabricStyles.getStyles('arcTriangleArrow').width;
 
         // draw central target node
         this.drawModelNode(canvas, xTargetNode, canvasMargin.top, modelName);
@@ -89,8 +91,6 @@ var DirectNeighborView = Backbone.View.extend({
 
             xIncoming = canvasMargin.left;
             this.drawStackFromNodeList(canvas, xIncoming, canvasMargin.top, incoming);
-
-
 
             maxIncomingTextWidth = _.max(
                 _.map(incoming, function (node) {
@@ -119,22 +119,20 @@ var DirectNeighborView = Backbone.View.extend({
                 i += 1;
             });
 
-            // draw aggregate arrow head
-            this.drawRightArrow(canvas, xTargetNode - arrowHeadWidth, yArcEnd);
+            // draw incoming arrow head
+            this.drawRightArrow(canvas, (xTargetNode + xSegment2) / 2.0, yArcEnd);
         }
 
         // draw outgoing neighbours
         if (!_.isEmpty(outgoing)) {
             var i,
                 maxOutgoingTextWidth,
-                rectBorderWidth,
                 xOutgoing,
                 xArcOutgoingEnd,
                 view = this,
                 xSegment1,
                 xSegment2;
 
-            rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
             maxOutgoingTextWidth = _.max(
                 _.map(outgoing, function (node) {
                     return view.getTextDimensions(canvas, node.get('modelName')).width;
@@ -175,7 +173,12 @@ var DirectNeighborView = Backbone.View.extend({
             });
 
             // draw outgoing arrow head
-            this.drawRightArrow(canvas, xSegment2 - arrowHeadWidth, yArcEnd);
+            var targetNodeEnd = xTargetNode + textMetrics.width + textMargin * 2 + rectBorderWidth;
+
+            this.drawRightArrow(canvas,
+                targetNodeEnd + (xSegment2 - targetNodeEnd) / 2.0,
+                yArcEnd
+            );
         }
     },
 
@@ -202,13 +205,15 @@ var DirectNeighborView = Backbone.View.extend({
             arrowTriangle,
             arcLineWidth;
 
-        // TODO fix positions so that arrow tip is directly on line
+
+
         height = FabricStyles.getStyles('arcTriangleArrow').height;
-        arcLineWidth = FabricStyles.getStyles('arcLine').strokeWidth;
+        arcLineWidth = FabricStyles.getStyles('arcTriangleArrow').strokeWidth;
         arrowTriangle = new fabric.Triangle({
-            left: x,
-            top: y - (height / 2.0) - (arcLineWidth / 2.0),
+            left: x + (height * 2.0 / 3.0),
+            top: y - height + (arcLineWidth * 2.0),
         }).withStyles('arcTriangleArrow');
+
         canvas.add(arrowTriangle);
     },
 

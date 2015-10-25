@@ -110,7 +110,7 @@ createBundle(
     }).transform(
         stringify({
             extentions: ['.tpl'],
-            minify: false, // TODO change htis once we add minification
+            minify: false, // TODO change this once we add minification
         }), {
             global: true,
         }

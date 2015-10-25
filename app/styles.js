@@ -2,6 +2,23 @@
 
 var ExportedStyles = {
 
+    debugRect: {
+        strokeWidth: 2,
+        stroke: 'red',
+        fill: 'pink',
+
+        width: 11,
+        height: 11,
+    },
+
+    debugPoint: {
+        stroke: 'black',
+        fill: 'black',
+        strokeWidth: 1,
+        width: 1,
+        height: 1,
+    },
+
     canvasMargin: {
         top: 10,
         left: 10,
@@ -34,6 +51,7 @@ var ExportedStyles = {
         height: 16,
         angle: 90,
 
+        strokeWidth: 2,
         stroke: 'black',
         fill: 'black'
     },

@@ -180,6 +180,15 @@ var DirectNeighborView = Backbone.View.extend({
                 yArcEnd
             );
         }
+
+        // test SVG
+        this.drawTestSvg(
+            canvas,
+            canvas.width / 2 - 32/2,
+            nodeHeight + rectBorderWidth * 2,
+            0.5,
+            0.5
+        );
     },
 
     drawSegmentedArc: function(canvas, xStart, yStart, xEnd, yEnd, xSegment1, xSegment2) {
@@ -287,6 +296,18 @@ var DirectNeighborView = Backbone.View.extend({
 
         return textStyle.textHeight +
             (rectStyle.strokeWidth + textStyle.textMargin) * 2;
+    },
+
+    drawTestSvg: function(canvas, x, y, scaleX, scaleY) {
+        fabric.loadSVGFromURL('images/basic_node.svg', function(objects) {
+            var svgGroup = new fabric.PathGroup(objects, {
+                left: x,
+                top: y,
+                scaleX: scaleX,
+                scaleY: scaleY,
+            });
+            canvas.add(svgGroup);
+        });
     },
 });
 

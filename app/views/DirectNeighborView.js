@@ -54,8 +54,6 @@ var DirectNeighborView = Backbone.View.extend({
             xTargetNode,
             yArcEnd;
 
-        // TODO patch Canvas._setImageSmoothing() to avoid deprecation warning based on the discussion here
-        // https://github.com/kangax/fabric.js/issues/2047
         canvas = new fabric.Canvas(this.$el[0], {
             width: window.innerWidth,
             height: window.innerHeight,

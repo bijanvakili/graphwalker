@@ -49,7 +49,7 @@
         return;
     }
 
-    FabricStyles = {
+    _.extend(FabricStyles, {
 
         VERSION: '0.0.1',
 
@@ -67,7 +67,7 @@
                 return this._allStyles[styles];
             }
         }
-    };
+    });
 
     _.extend(fabric.Object.prototype, {
 

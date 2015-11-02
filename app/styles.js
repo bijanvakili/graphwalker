@@ -25,20 +25,30 @@ var ExportedStyles = {
         right: 10,
     },
 
-    vertexRect: {
-        fill: 'yellow',
-        stroke: 'black',
-        strokeWidth: 5,
+    // styles for icon within a single vertex object
+    vertexIcon: {
+        left: 2,
+        top: 2,
+        scaleX: 0.5,
+        scaleY: 0.5,
     },
 
     vertexText: {
-        fontFamily: 'serif',
-        fontSize: 24,
+        fontFamily: 'arial',
+        fontSize: 14,
         fill: 'blue',
+
+        left: 16,
+        top: 38,
 
         // TODO: Find a more accurate way to measure/handle text height
         textHeight: 15,
         textMargin: 15,
+    },
+
+    // TODO: remove this
+    vertexRect: {
+        strokeWidth: 5,
     },
 
     arcLine: {

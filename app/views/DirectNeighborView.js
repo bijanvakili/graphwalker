@@ -1,6 +1,9 @@
 'use strict';
 
-var DirectNeighborView = Backbone.View.extend({
+var VertexObject = require('app/views/objects/VertexObject'),
+    DirectNeighborView;
+
+DirectNeighborView = Backbone.View.extend({
 
     el: "#view",
 
@@ -24,7 +27,9 @@ var DirectNeighborView = Backbone.View.extend({
 
     render: function() {
         var graph,
-            targetNode;
+            targetNode,
+            view,
+            vertexTemplateObject;
 
         graph = this.model;
         targetNode = graph.findVertex(this.target);
@@ -75,7 +80,7 @@ var DirectNeighborView = Backbone.View.extend({
         yArcEnd = canvasMargin.top + nodeHeight / 2;
 
         // draw central target node
-        this.drawModelNode(canvas, xTargetNode, canvasMargin.top, modelName);
+        this.drawModelNode(canvas, xTargetNode, canvasMargin.top, model);
 
         // draw incoming neighbours
         if (!_.isEmpty(incoming)) {
@@ -178,15 +183,6 @@ var DirectNeighborView = Backbone.View.extend({
                 yArcEnd
             );
         }
-
-        // test SVG
-        this.drawTestSvg(
-            canvas,
-            canvas.width / 2 - 32/2,
-            nodeHeight + rectBorderWidth * 2,
-            0.5,
-            0.5
-        );
     },
 
     drawSegmentedArc: function(canvas, xStart, yStart, xEnd, yEnd, xSegment1, xSegment2) {
@@ -239,35 +235,15 @@ var DirectNeighborView = Backbone.View.extend({
         }
     },
 
-    drawModelNode: function(canvas, x, y, modelName) {
-      var textMetrics,
-          rectBorderWidth,
-          margin,
-          rect,
-          text,
-          group;
+    drawModelNode: function(canvas, x, y, model) {
+        new VertexObject(model, {
+            left: x,
+            top: y,
+            onInitialized: function(vertexObject) {
+                canvas.add(vertexObject);
+            },
+        });
 
-      textMetrics = this.getTextDimensions(canvas, modelName);
-
-      margin = FabricStyles.getStyles('vertexText').textMargin;
-      rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
-
-      // TODO: move static properties into styles (only 'width' is dynamic)
-      rect = new fabric.Rect({
-        width: textMetrics.width + margin * 2,
-        height: textMetrics.height + margin * 2,
-      }).withStyles('vertexRect');
-      text = new fabric.Text(modelName, {
-        left: margin,
-        top: margin,
-      }).withStyles('vertexText');
-
-      group = new fabric.Group([rect, text], {
-        left: x,
-        top: y,
-      });
-
-      canvas.add(group);
     },
 
     drawStackFromNodeList: function(canvas, x, y, nodeList) {
@@ -284,7 +260,7 @@ var DirectNeighborView = Backbone.View.extend({
             var yNode;
 
             yNode = y + (nodeHeight * index);
-            view.drawModelNode(canvas, x, yNode, node.get('modelName'));
+            view.drawModelNode(canvas, x, yNode, node);
         });
     },
 
@@ -294,18 +270,6 @@ var DirectNeighborView = Backbone.View.extend({
 
         return textStyle.textHeight +
             (rectStyle.strokeWidth + textStyle.textMargin) * 2;
-    },
-
-    drawTestSvg: function(canvas, x, y, scaleX, scaleY) {
-        fabric.loadSVGFromURL('images/basic_node.svg', function(objects) {
-            var svgGroup = new fabric.PathGroup(objects, {
-                left: x,
-                top: y,
-                scaleX: scaleX,
-                scaleY: scaleY,
-            });
-            canvas.add(svgGroup);
-        });
     },
 });
 

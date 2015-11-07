@@ -1,12 +1,10 @@
 'use strict';
 
-var SvgObject,
+var SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
+    SvgObject,
     VertexObject;
 
-SvgObject = require('app/models/Svg').SvgObject;
-
 // TODO use getBoundingRect() with clients!!!
-
 var VertexObject = fabric.util.createClass(fabric.Group, {
 
     vertexData: null,
@@ -21,25 +19,19 @@ var VertexObject = fabric.util.createClass(fabric.Group, {
      * @event initialized: fabric event to indicate that the object is ready to be added to the canvas
      */
     initialize: function(model, options) {
-        var iconSvg,
-            vertexObject;
+        var vertexObject;
 
         this.callSuper('initialize');
         this.vertexData = model;
-        vertexObject = this;
-
         if (_.has(options, 'onInitialized')) {
             this.on('initialized', options['onInitialized']);
             options = _.omit(options, 'onInitialized');
         }
 
         // TODO Try moving the SVG name into the styles
-        iconSvg = new SvgObject({
-            id: 'basic_node.svg',
-        });
-
-        iconSvg.fetch({
-            success: function(model, iconObj) {
+        vertexObject = this;
+        SvgTemplateCache.fetch('basic_node.svg', {
+            success: function(iconObj) {
                 vertexObject.iconObj = iconObj;
                 vertexObject._initializeComponents(options);
             }

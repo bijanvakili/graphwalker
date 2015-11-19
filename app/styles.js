@@ -51,9 +51,19 @@ var ExportedStyles = {
         strokeWidth: 5,
     },
 
-    arcLine: {
+    edgeLine: {
         strokeWidth: 2,
         stroke: 'black',
+    },
+
+    edgeText: {
+        fontFamily: 'arial',
+        fontStyle: 'italic',
+        fontSize: 10,
+        fill: 'black',
+
+        left: 40,
+        top: 10,
     },
 
     arcTriangleArrow: {

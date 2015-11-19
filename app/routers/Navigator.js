@@ -1,75 +1,53 @@
 'use strict';
 
-var Settings = require('app/models/Settings'),
-    Graph = require('app/models/GraphData').Graph,
-    DirectNeighborView = require('app/views/DirectNeighborView'),
+var DirectNeighborView = require('app/views/DirectNeighborView'),
     Navigator;
 
 Navigator = Backbone.Router.extend({
 
+    settings: null,
+    graph: null,
+    view: null,
+
     routes: {
-      ":appName/:model": "moveToQualifiedModel",
-      ":model": "moveToUnqualifiedModel",
+      ":appName/:model": "moveToQualifiedVertex",
+      ":model":          "moveToUnqualifiedVertex",
+      "":                "moveToStartVertex",
     },
 
-    initialize: function() {
-        this.settings = new Settings();
+    initialize: function(options) {
+        this.settings = options.settings;
+        this.graph = options.graph;
     },
 
-    runWithSettings: function(func) {
-        // ensure the settings are loaded
-        if (!this.settings.has('graphDataFile')) {
-            this.listenToOnce(this.settings, "change", func);
-            this.settings.fetch({
-                error: function (model, response, options) {
-                    alert('Unable to load settings');
-                },
-            });
-        }
-        else {
-            _.bind(func, this, {})();
-        }
+    moveToStartVertex: function() {
+        var startNode = this.settings.get('start');
+
+        this.onMove(startNode['app'], startNode['model']);
     },
 
-    startNavigation: function() {
-        this.runWithSettings(function() {
-            var startNode = this.settings.get('start');
-
-            this.onMove(startNode['app'], startNode['model']);
-        });
+    moveToQualifiedVertex: function(appName, modelName) {
+        this.onMove(appName, modelName);
     },
 
-    moveToQualifiedModel: function(appName, modelName) {
-        this.runWithSettings(function() {
-            this.onMove(appName, modelName);
-        });
-    },
+    moveToUnqualifiedVertex: function(modelName) {
+        var defaultApp;
 
-    moveToUnqualifiedModel: function(modelName) {
-        this.runWithSettings(function() {
-            var defaultApp;
-
-            defaultApp = this.settings.get('start')['app'];
-            this.onMove(defaultApp, modelName);
-        });
+        defaultApp = this.settings.get('start')['app'];
+        this.onMove(defaultApp, modelName);
     },
 
     onMove: function(appName, modelName) {
-        var graph;
-
-        graph = new Graph({
-            graphDataFile: this.settings.get("graphDataFile"),
-        });
-
+        this.view = null;
         this.view = new DirectNeighborView({
             settings: this.settings,
-            model: graph,
+            model: this.graph,
             target: {
                 appName: appName,
                 modelName: modelName,
             },
         });
-        graph.fetch();
+        this.view.render();
     },
 });
 

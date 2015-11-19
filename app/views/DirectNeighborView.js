@@ -1,6 +1,7 @@
 'use strict';
 
 var VertexObject = require('app/views/objects/VertexObject'),
+    EdgeObject = require('app/views/objects/EdgeObject'),
     DirectNeighborView;
 
 DirectNeighborView = Backbone.View.extend({
@@ -18,11 +19,6 @@ DirectNeighborView = Backbone.View.extend({
 
     initialize: function(options) {
         this.target = options.target;
-
-        this.listenTo(this.model, "change", this.render);
-        this.listenTo(this.model, "error", function (model, response, options) {
-            this.reportError('Unable to load graph data', response);
-        });
     },
 
     render: function() {
@@ -48,7 +44,6 @@ DirectNeighborView = Backbone.View.extend({
 
     drawLocalModelGraph: function(model, incoming, outgoing) {
         var canvas,
-            context,
             modelName,
             textMargin,
             textMetrics,
@@ -57,9 +52,14 @@ DirectNeighborView = Backbone.View.extend({
             rectBorderWidth,
             xIncoming,
             xTargetNode,
-            yArcEnd;
+            yArcEnd,
+            targetNodeObject,
+            incomingNodeObjects,
+            outgoingNodeObjects,
+            i,
+            afterAllNodesInitialized;
 
-        canvas = new fabric.Canvas(this.$el[0], {
+        canvas = new fabric.StaticCanvas(this.$el[0], {
             width: window.innerWidth,
             height: window.innerHeight,
         });
@@ -79,8 +79,46 @@ DirectNeighborView = Backbone.View.extend({
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
         yArcEnd = canvasMargin.top + nodeHeight / 2;
 
+
+        afterAllNodesInitialized = _.after(incoming.length + outgoing.length + 1, function() {
+            var onEdgeInitialized,
+                edgeOptions;
+
+            // add the nodes to the canvas
+            _.each(_.union([targetNodeObject], incomingNodeObjects, outgoingNodeObjects), function(object) {
+                canvas.add(object);
+            });
+
+            onEdgeInitialized = function(edgeObject) {
+               canvas.add(edgeObject);
+            };
+
+            // draw all edges
+            edgeOptions = {
+                onInitialized: onEdgeInitialized,
+            };
+            for (i = 0; i < incoming.length; ++i) {
+                new EdgeObject(
+                    incoming[i].edge,
+                    incomingNodeObjects[i],
+                    targetNodeObject,
+                    'incoming',
+                    edgeOptions
+                );
+            }
+            for (i = 0; i < outgoing.length; ++i) {
+                new EdgeObject(
+                    outgoing[i].edge,
+                    targetNodeObject,
+                    outgoingNodeObjects[i],
+                    'outgoing',
+                    edgeOptions
+                );
+            }
+        });
+
         // draw central target node
-        this.drawModelNode(canvas, xTargetNode, canvasMargin.top, model);
+        targetNodeObject = this.createModelNode(xTargetNode, canvasMargin.top, model, afterAllNodesInitialized);
 
         // draw incoming neighbours
         if (!_.isEmpty(incoming)) {
@@ -93,16 +131,22 @@ DirectNeighborView = Backbone.View.extend({
                 view = this;
 
             xIncoming = canvasMargin.left;
-            this.drawStackFromNodeList(canvas, xIncoming, canvasMargin.top, incoming);
+            incomingNodeObjects = this.drawStackFromNodeList(
+                xIncoming,
+                canvasMargin.top,
+                incoming,
+                afterAllNodesInitialized
+            );
 
             maxIncomingTextWidth = _.max(
-                _.map(incoming, function (node) {
-                    return view.getTextDimensions(canvas, node.get('modelName')).width;
+                _.map(incoming, function (neighbor) {
+                    return view.getTextDimensions(canvas, neighbor.vertex.get('modelName')).width;
                 })
             );
             xSegment1 = xIncoming + maxIncomingTextWidth + textMargin * 2;
             xSegment2 = xSegment1 + (xTargetNode - xSegment1) / 2.0;
 
+/*
             _.each(incoming, function(node) {
                 var yArc,
                     textMetrics;
@@ -121,7 +165,7 @@ DirectNeighborView = Backbone.View.extend({
 
                 i += 1;
             });
-
+*/
             // draw incoming arrow head
             this.drawRightArrow(canvas, (xTargetNode + xSegment2) / 2.0, yArcEnd);
         }
@@ -137,21 +181,26 @@ DirectNeighborView = Backbone.View.extend({
                 xSegment2;
 
             maxOutgoingTextWidth = _.max(
-                _.map(outgoing, function (node) {
-                    return view.getTextDimensions(canvas, node.get('modelName')).width;
+                _.map(outgoing, function (neighbor) {
+                    return view.getTextDimensions(canvas, neighbor.vertex.get('modelName')).width;
                 })
             );
 
             xOutgoing = canvas.width - canvasMargin.right - maxOutgoingTextWidth
                 - (textMargin * 2) - (rectBorderWidth * 2);
 
-            // draw outgoing nodes
-            this.drawStackFromNodeList(canvas, xOutgoing, canvasMargin.top, outgoing);
+            outgoingNodeObjects = this.drawStackFromNodeList(
+                xOutgoing,
+                canvasMargin.top,
+                outgoing,
+                afterAllNodesInitialized
+            );
 
             // draw outgoing arcs
             xArcOutgoingEnd = xTargetNode + textMetrics.width + textMargin * 2;
             xSegment1 = xArcOutgoingEnd + 2/3 * (xOutgoing - xArcOutgoingEnd);
             xSegment2 = xArcOutgoingEnd + 1/3 * (xOutgoing - xArcOutgoingEnd);
+/*
             i = 0;
 
             _.each(outgoing, function(node) {
@@ -174,7 +223,7 @@ DirectNeighborView = Backbone.View.extend({
 
                 i += 1;
             });
-
+*/
             // draw outgoing arrow head
             var targetNodeEnd = xTargetNode + textMetrics.width + textMargin * 2 + rectBorderWidth;
 
@@ -184,7 +233,7 @@ DirectNeighborView = Backbone.View.extend({
             );
         }
     },
-
+/*
     drawSegmentedArc: function(canvas, xStart, yStart, xEnd, yEnd, xSegment1, xSegment2) {
         var arcLines = [],
             arcGroup,
@@ -200,15 +249,13 @@ DirectNeighborView = Backbone.View.extend({
         arcGroup = new fabric.Group(arcLines);
         canvas.add(arcGroup);
     },
-
+*/
     drawRightArrow: function(canvas, x, y) {
         var height,
             pathCommands,
             arrowPath,
             arrowTriangle,
             arcLineWidth;
-
-
 
         height = FabricStyles.getStyles('arcTriangleArrow').height;
         arcLineWidth = FabricStyles.getStyles('arcTriangleArrow').strokeWidth;
@@ -235,32 +282,30 @@ DirectNeighborView = Backbone.View.extend({
         }
     },
 
-    drawModelNode: function(canvas, x, y, model) {
-        new VertexObject(model, {
+    createModelNode: function(x, y, model, callback) {
+        return new VertexObject(model, {
             left: x,
             top: y,
             onInitialized: function(vertexObject) {
-                canvas.add(vertexObject);
+                callback();
             },
         });
-
     },
 
-    drawStackFromNodeList: function(canvas, x, y, nodeList) {
+    drawStackFromNodeList: function(x, y, neighborList, callback) {
         var nodeHeight,
-            view;
+            self = this;
 
-        if (_.isNull(nodeList)) {
-            return;
+        if (_.isNull(neighborList)) {
+            return [];
         }
 
         nodeHeight = this.getNodeHeight();
-        view = this;
-        _.each(nodeList, function(node, index) {
+        return _.collect(neighborList, function(neighbor, index) {
             var yNode;
 
             yNode = y + (nodeHeight * index);
-            view.drawModelNode(canvas, x, yNode, node);
+            return self.createModelNode(x, yNode, neighbor.vertex, callback);
         });
     },
 

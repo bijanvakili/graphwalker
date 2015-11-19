@@ -1,11 +1,11 @@
 'use strict';
 
 var SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
-    SvgObject,
+    BaseViewGroup = require('app/views/objects/BaseViewGroup'),
     VertexObject;
 
 // TODO use getBoundingRect() with clients!!!
-var VertexObject = fabric.util.createClass(fabric.Group, {
+var VertexObject = fabric.util.createClass(BaseViewGroup, {
 
     vertexData: null,
     iconObj: null,
@@ -19,26 +19,41 @@ var VertexObject = fabric.util.createClass(fabric.Group, {
      * @event initialized: fabric event to indicate that the object is ready to be added to the canvas
      */
     initialize: function(model, options) {
-        var vertexObject;
+        var self = this;
 
-        this.callSuper('initialize');
+        this.callSuper('initialize', options);
         this.vertexData = model;
-        if (_.has(options, 'onInitialized')) {
-            this.on('initialized', options['onInitialized']);
-            options = _.omit(options, 'onInitialized');
-        }
 
         // TODO Try moving the SVG name into the styles
-        vertexObject = this;
         SvgTemplateCache.fetch('basic_node.svg', {
             success: function(iconObj) {
-                vertexObject.iconObj = iconObj;
-                vertexObject._initializeComponents(options);
+                self.iconObj = iconObj;
+                self._initializeComponents();
             }
         });
     },
 
-    _initializeComponents: function(options) {
+    /*
+     * Retrieves the coordinate for which to connect an edge
+     */
+    getConnectionPoint: function() {
+        // TODO add ability to get left or right boundary
+        var vertexAbsPosition,
+            iconRelativePosition;
+
+        vertexAbsPosition = new fabric.Point(
+            this.getLeft(),
+            this.getTop()
+        );
+        iconRelativePosition = new fabric.Point(
+            this.iconObj.getLeft(),
+            this.iconObj.getTop()
+        );
+
+        return vertexAbsPosition.add(iconRelativePosition);
+    },
+
+    _initializeComponents: function() {
         var labelText;
 
         this.iconObj = this.iconObj.withStyles('vertexIcon');
@@ -47,7 +62,6 @@ var VertexObject = fabric.util.createClass(fabric.Group, {
 
         this.add(this.iconObj);
         this.add(this.labelObj);
-        this.setOptions(options);
 
         this.trigger('initialized', this);
     },

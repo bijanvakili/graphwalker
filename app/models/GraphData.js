@@ -44,6 +44,7 @@ Edge = Backbone.Model.extend({
         source: null,
         dest: null,
         type: "ForeignKey",
+        label: "",
     },
 
     isInheritanceRelation: function() {
@@ -115,6 +116,8 @@ Graph = Backbone.Model.extend({
                             source: sourceVertex,
                             dest: destVertex,
                             type: relation['type'],
+                            // TODO: parse label
+                            label: relation['name'],
                         });
                     }
                 });
@@ -157,7 +160,10 @@ Graph = Backbone.Model.extend({
             }
 
             if (edge.get(attrMatch).isEqual(vertex.attributes)) {
-                neighbors.push(edge.get(attrCollect));
+                neighbors.push({
+                    'vertex': edge.get(attrCollect),
+                    'edge': edge,
+                });
             }
         });
 

@@ -30,8 +30,8 @@ else {
                     loader = this;
 
                 loader.pendingRequests[id] = [callback];
-                fabric.loadSVGFromURL(url, function(objects) {
-                    var templateObject = new fabric.PathGroup(objects);
+                fabric.loadSVGFromURL(url, function(objects, options) {
+                    var templateObject = fabric.util.groupSVGElements(objects, options);
 
                     loader.cachedObjects[id] = templateObject;
                     _.each(loader.pendingRequests[id], function(callback) {

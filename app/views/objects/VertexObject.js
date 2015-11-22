@@ -36,21 +36,29 @@ var VertexObject = fabric.util.createClass(BaseViewGroup, {
     /*
      * Retrieves the coordinate for which to connect an edge
      */
-    getConnectionPoint: function() {
-        // TODO add ability to get left or right boundary
-        var vertexAbsPosition,
-            iconRelativePosition;
+    getConnectionPoint: function(side) {
+        var iconBoundingRect,
+            vertexAbsPosition,
+            xOffset;
 
-        vertexAbsPosition = new fabric.Point(
-            this.getLeft(),
-            this.getTop()
-        );
-        iconRelativePosition = new fabric.Point(
-            this.iconObj.getLeft(),
-            this.iconObj.getTop()
-        );
+        iconBoundingRect = this.iconObj.getBoundingRect();
+        vertexAbsPosition = new fabric.Point(this.getLeft(),this.getTop());
+        if (side == 'left') {
+            xOffset = 0;
+        }
+        else if (side == 'right') {
+            xOffset = iconBoundingRect.width;
+        }
+        else {
+            // TODO add better error handling
+            alert('unrecognized side');
+        }
 
-        return vertexAbsPosition.add(iconRelativePosition);
+        return vertexAbsPosition.add({
+            // TODO find a simpler way to handle scalar transforms
+            x: (iconBoundingRect.left + xOffset) * this.iconObj.getScaleX(),
+            y: ((iconBoundingRect.top + iconBoundingRect.height) / 2.0) * this.iconObj.getScaleY()
+        });
     },
 
     _initializeComponents: function() {

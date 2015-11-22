@@ -146,26 +146,6 @@ DirectNeighborView = Backbone.View.extend({
             xSegment1 = xIncoming + maxIncomingTextWidth + textMargin * 2;
             xSegment2 = xSegment1 + (xTargetNode - xSegment1) / 2.0;
 
-/*
-            _.each(incoming, function(node) {
-                var yArc,
-                    textMetrics;
-
-                textMetrics = view.getTextDimensions(canvas, node.get('modelName'));
-                yArc = canvasMargin.top + nodeHeight * (i + 0.5);
-                view.drawSegmentedArc(
-                    canvas,
-                    xIncoming + textMetrics.width + textMargin * 2,
-                    yArc,
-                    xTargetNode,
-                    yArcEnd,
-                    xSegment1,
-                    xSegment2
-                );
-
-                i += 1;
-            });
-*/
             // draw incoming arrow head
             this.drawRightArrow(canvas, (xTargetNode + xSegment2) / 2.0, yArcEnd);
         }
@@ -200,30 +180,7 @@ DirectNeighborView = Backbone.View.extend({
             xArcOutgoingEnd = xTargetNode + textMetrics.width + textMargin * 2;
             xSegment1 = xArcOutgoingEnd + 2/3 * (xOutgoing - xArcOutgoingEnd);
             xSegment2 = xArcOutgoingEnd + 1/3 * (xOutgoing - xArcOutgoingEnd);
-/*
-            i = 0;
 
-            _.each(outgoing, function(node) {
-                var modelName = node.get('modelName'),
-                    yArc,
-                    textMetrics;
-
-                textMetrics = view.getTextDimensions(canvas, node.get('modelName'));
-                yArc = canvasMargin.top + nodeHeight * (i + 0.5);
-
-                view.drawSegmentedArc(
-                    canvas,
-                    xOutgoing,
-                    yArc,
-                    xArcOutgoingEnd,
-                    yArcEnd,
-                    xSegment1,
-                    xSegment2
-                );
-
-                i += 1;
-            });
-*/
             // draw outgoing arrow head
             var targetNodeEnd = xTargetNode + textMetrics.width + textMargin * 2 + rectBorderWidth;
 
@@ -233,23 +190,7 @@ DirectNeighborView = Backbone.View.extend({
             );
         }
     },
-/*
-    drawSegmentedArc: function(canvas, xStart, yStart, xEnd, yEnd, xSegment1, xSegment2) {
-        var arcLines = [],
-            arcGroup,
-            lineOptions;
 
-        lineOptions = {
-           FabricStyles: ['arcLine']
-        };
-        arcLines.push(new fabric.Line([xStart, yStart, xSegment1, yStart]).withStyles('arcLine'));
-        arcLines.push(new fabric.Line([xSegment1, yStart, xSegment2, yEnd]).withStyles('arcLine'));
-        arcLines.push(new fabric.Line([xSegment2, yEnd, xEnd, yEnd]).withStyles('arcLine'));
-
-        arcGroup = new fabric.Group(arcLines);
-        canvas.add(arcGroup);
-    },
-*/
     drawRightArrow: function(canvas, x, y) {
         var height,
             pathCommands,

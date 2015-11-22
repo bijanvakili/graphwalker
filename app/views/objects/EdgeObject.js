@@ -39,9 +39,9 @@ EdgeObject = fabric.util.createClass(BaseViewGroup, {
             labelObj,
             textAnchorPoint;
 
-        endpoints = _.map(this.endpointObjects, function(vertexObject) {
-            return vertexObject.getConnectionPoint();
-        }, this);
+        // assume edges always move right to left
+        endpoints.push(this.endpointObjects[0].getConnectionPoint('right'));
+        endpoints.push(this.endpointObjects[1].getConnectionPoint('left'));
 
         // break edge into 3 segments
         vectorEdge = endpoints[1].subtract(endpoints[0]);

@@ -4,7 +4,6 @@ var SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
     BaseViewGroup = require('app/views/objects/BaseViewGroup'),
     VertexObject;
 
-// TODO use getBoundingRect() with clients!!!
 var VertexObject = fabric.util.createClass(BaseViewGroup, {
 
     vertexData: null,

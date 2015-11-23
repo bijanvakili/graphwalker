@@ -24,7 +24,6 @@ DirectNeighborView = Backbone.View.extend({
     render: function() {
         var graph,
             targetNode,
-            view,
             vertexTemplateObject;
 
         graph = this.model;
@@ -57,7 +56,7 @@ DirectNeighborView = Backbone.View.extend({
             incomingNodeObjects,
             outgoingNodeObjects,
             i,
-            afterAllNodesInitialized;
+            anyVertexObjectInitialized;
 
         canvas = new fabric.StaticCanvas(this.$el[0], {
             width: window.innerWidth,
@@ -79,14 +78,13 @@ DirectNeighborView = Backbone.View.extend({
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
         yArcEnd = canvasMargin.top + nodeHeight / 2;
 
-
-        afterAllNodesInitialized = _.after(incoming.length + outgoing.length + 1, function() {
+        anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function() {
             var onEdgeInitialized,
                 edgeOptions;
 
             // add the nodes to the canvas
-            _.each(_.union([targetNodeObject], incomingNodeObjects, outgoingNodeObjects), function(object) {
-                canvas.add(object);
+            _.each(_.union([targetNodeObject], incomingNodeObjects, outgoingNodeObjects), function(vertexObject) {
+                canvas.add(vertexObject);
             });
 
             onEdgeInitialized = function(edgeObject) {
@@ -118,11 +116,13 @@ DirectNeighborView = Backbone.View.extend({
         });
 
         // draw central target node
-        targetNodeObject = this.createModelNode(xTargetNode, canvasMargin.top, model, afterAllNodesInitialized);
+        this.createModelNode(xTargetNode, canvasMargin.top, model, function(vertexObject) {
+            targetNodeObject = vertexObject;
+            anyVertexObjectInitialized();
+        });
 
         // draw incoming neighbours
         if (!_.isEmpty(incoming)) {
-            // draw incoming arcs
             var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
                 maxIncomingTextWidth,
                 xSegment1,
@@ -131,11 +131,15 @@ DirectNeighborView = Backbone.View.extend({
                 view = this;
 
             xIncoming = canvasMargin.left;
-            incomingNodeObjects = this.drawStackFromNodeList(
+            incomingNodeObjects = [];
+            this.createStackFromNodeList(
                 xIncoming,
                 canvasMargin.top,
                 incoming,
-                afterAllNodesInitialized
+                function(vertexObject) {
+                    incomingNodeObjects.push(vertexObject);
+                    anyVertexObjectInitialized();
+                }
             );
 
             maxIncomingTextWidth = _.max(
@@ -168,12 +172,15 @@ DirectNeighborView = Backbone.View.extend({
 
             xOutgoing = canvas.width - canvasMargin.right - maxOutgoingTextWidth
                 - (textMargin * 2) - (rectBorderWidth * 2);
-
-            outgoingNodeObjects = this.drawStackFromNodeList(
+            outgoingNodeObjects = [];
+            this.createStackFromNodeList(
                 xOutgoing,
                 canvasMargin.top,
                 outgoing,
-                afterAllNodesInitialized
+                function(vertexObject) {
+                    outgoingNodeObjects.push(vertexObject);
+                    anyVertexObjectInitialized();
+                }
             );
 
             // draw outgoing arcs
@@ -227,13 +234,13 @@ DirectNeighborView = Backbone.View.extend({
         return new VertexObject(model, {
             left: x,
             top: y,
-            onInitialized: function(vertexObject) {
-                callback();
+            onInitialized: function(object) {
+                callback(object);
             },
         });
     },
 
-    drawStackFromNodeList: function(x, y, neighborList, callback) {
+    createStackFromNodeList: function(x, y, neighborList, callback) {
         var nodeHeight,
             self = this;
 
@@ -242,11 +249,11 @@ DirectNeighborView = Backbone.View.extend({
         }
 
         nodeHeight = this.getNodeHeight();
-        return _.collect(neighborList, function(neighbor, index) {
+        return _.each(neighborList, function(neighbor, index) {
             var yNode;
 
             yNode = y + (nodeHeight * index);
-            return self.createModelNode(x, yNode, neighbor.vertex, callback);
+            self.createModelNode(x, yNode, neighbor.vertex, callback);
         });
     },
 

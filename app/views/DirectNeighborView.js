@@ -1,8 +1,13 @@
 'use strict';
 
 var VertexObject = require('app/views/objects/VertexObject'),
-    EdgeObject = require('app/views/objects/EdgeObject'),
+    EdgeObjectModule = require('app/views/objects/EdgeObject'),
+    EdgeObject,
+    EdgeDirectionIndicatorObject,
     DirectNeighborView;
+
+EdgeObject = EdgeObjectModule.EdgeObject;
+EdgeDirectionIndicatorObject = EdgeObjectModule.EdgeDirectionIndicatorObject;
 
 DirectNeighborView = Backbone.View.extend({
 
@@ -42,7 +47,8 @@ DirectNeighborView = Backbone.View.extend({
     },
 
     drawLocalModelGraph: function(model, incoming, outgoing) {
-        var canvas,
+        var self = this,
+            canvas,
             modelName,
             textMargin,
             textMetrics,
@@ -51,7 +57,6 @@ DirectNeighborView = Backbone.View.extend({
             rectBorderWidth,
             xIncoming,
             xTargetNode,
-            yArcEnd,
             targetNodeObject,
             incomingNodeObjects,
             outgoingNodeObjects,
@@ -76,11 +81,14 @@ DirectNeighborView = Backbone.View.extend({
         nodeHeight = this.getNodeHeight();
         rectBorderWidth = FabricStyles.getStyles('vertexRect').strokeWidth;
         xTargetNode = (canvas.width) / 2 - (textMetrics.width / 2);
-        yArcEnd = canvasMargin.top + nodeHeight / 2;
 
         anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function() {
             var onEdgeInitialized,
-                edgeOptions;
+                edgeOptions,
+                yArcEnd;
+
+            yArcEnd = targetNodeObject.getConnectionPoint('left').y +
+                FabricStyles.getStyles('edgeLine').strokeWidth / 2.0;
 
             // add the nodes to the canvas
             _.each(_.union([targetNodeObject], incomingNodeObjects, outgoingNodeObjects), function(vertexObject) {
@@ -95,23 +103,47 @@ DirectNeighborView = Backbone.View.extend({
             edgeOptions = {
                 onInitialized: onEdgeInitialized,
             };
-            for (i = 0; i < incoming.length; ++i) {
-                new EdgeObject(
-                    incoming[i].edge,
-                    incomingNodeObjects[i],
-                    targetNodeObject,
-                    'incoming',
-                    edgeOptions
-                );
+            if (incoming.length > 0) {
+                var xMid,
+                    xLeftmost;
+
+                for (i = 0; i < incoming.length; ++i) {
+                    new EdgeObject(
+                        incoming[i].edge,
+                        incomingNodeObjects[i],
+                        targetNodeObject,
+                        'incoming',
+                        edgeOptions
+                    );
+                }
+
+                xLeftmost = incomingNodeObjects[0].getConnectionPoint('right').x;
+                xMid = xLeftmost + (
+                    targetNodeObject.getConnectionPoint('left').x -
+                    xLeftmost
+                ) * 5/6;
+                self.drawRightArrow(canvas, xMid, yArcEnd);
             }
-            for (i = 0; i < outgoing.length; ++i) {
-                new EdgeObject(
-                    outgoing[i].edge,
-                    targetNodeObject,
-                    outgoingNodeObjects[i],
-                    'outgoing',
-                    edgeOptions
-                );
+            if (outgoing.length > 0) {
+                var xMid,
+                    xLeftmost;
+
+                for (i = 0; i < outgoing.length; ++i) {
+                    new EdgeObject(
+                        outgoing[i].edge,
+                        targetNodeObject,
+                        outgoingNodeObjects[i],
+                        'outgoing',
+                        edgeOptions
+                    );
+                }
+
+                xLeftmost = targetNodeObject.getConnectionPoint('right').x;
+                xMid = xLeftmost + (
+                    outgoingNodeObjects[0].getConnectionPoint('left').x -
+                    xLeftmost
+                ) * 1/6;
+                self.drawRightArrow(canvas, xMid, yArcEnd);
             }
         });
 
@@ -141,17 +173,6 @@ DirectNeighborView = Backbone.View.extend({
                     anyVertexObjectInitialized();
                 }
             );
-
-            maxIncomingTextWidth = _.max(
-                _.map(incoming, function (neighbor) {
-                    return view.getTextDimensions(canvas, neighbor.vertex.get('modelName')).width;
-                })
-            );
-            xSegment1 = xIncoming + maxIncomingTextWidth + textMargin * 2;
-            xSegment2 = xSegment1 + (xTargetNode - xSegment1) / 2.0;
-
-            // draw incoming arrow head
-            this.drawRightArrow(canvas, (xTargetNode + xSegment2) / 2.0, yArcEnd);
         }
 
         // draw outgoing neighbours
@@ -182,37 +203,19 @@ DirectNeighborView = Backbone.View.extend({
                     anyVertexObjectInitialized();
                 }
             );
-
-            // draw outgoing arcs
-            xArcOutgoingEnd = xTargetNode + textMetrics.width + textMargin * 2;
-            xSegment1 = xArcOutgoingEnd + 2/3 * (xOutgoing - xArcOutgoingEnd);
-            xSegment2 = xArcOutgoingEnd + 1/3 * (xOutgoing - xArcOutgoingEnd);
-
-            // draw outgoing arrow head
-            var targetNodeEnd = xTargetNode + textMetrics.width + textMargin * 2 + rectBorderWidth;
-
-            this.drawRightArrow(canvas,
-                targetNodeEnd + (xSegment2 - targetNodeEnd) / 2.0,
-                yArcEnd
-            );
         }
     },
 
     drawRightArrow: function(canvas, x, y) {
-        var height,
-            pathCommands,
-            arrowPath,
-            arrowTriangle,
-            arcLineWidth;
-
-        height = FabricStyles.getStyles('arcTriangleArrow').height;
-        arcLineWidth = FabricStyles.getStyles('arcTriangleArrow').strokeWidth;
-        arrowTriangle = new fabric.Triangle({
-            left: x + (height * 2.0 / 3.0),
-            top: y - height + (arcLineWidth * 2.0),
-        }).withStyles('arcTriangleArrow');
-
-        canvas.add(arrowTriangle);
+        new EdgeDirectionIndicatorObject({
+            left: x,
+            top: y,
+            onInitialized: function(obj) {
+                // set styles here prior since SVG may be loaded from cache
+                obj.withStyles('arcTriangleArrow');
+                canvas.add(obj);
+            },
+        });
     },
 
     getTextDimensions: function(canvas, s) {

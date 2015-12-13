@@ -1,7 +1,10 @@
 'use strict';
 
 var BaseViewGroup = require('app/views/objects/BaseViewGroup'),
-    EdgeObject;
+    SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
+    EdgeObject,
+    EdgeDirectionIndicatorObject;
+
 
 EdgeObject = fabric.util.createClass(BaseViewGroup, {
     edgeData: null,
@@ -86,4 +89,26 @@ EdgeObject = fabric.util.createClass(BaseViewGroup, {
     },
 });
 
-module.exports = EdgeObject;
+
+EdgeDirectionIndicatorObject = fabric.util.createClass(BaseViewGroup, {
+
+    initialize: function(options) {
+        var self = this;
+
+        this.callSuper('initialize', options);
+
+        // TODO Try moving the SVG name into the styles
+        SvgTemplateCache.fetch('arrow.svg', {
+            success: function(arrowObj) {
+                self.addWithUpdate(arrowObj);
+                self.trigger('initialized', self);
+            }
+        });
+    },
+
+});
+
+module.exports = {
+    EdgeObject,
+    EdgeDirectionIndicatorObject
+};

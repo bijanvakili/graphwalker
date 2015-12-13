@@ -67,13 +67,8 @@ var ExportedStyles = {
     },
 
     arcTriangleArrow: {
-        width: 24,
-        height: 16,
-        angle: 90,
-
-        strokeWidth: 2,
-        stroke: 'black',
-        fill: 'black'
+        originX: 'center',
+        originY: 'center',
     },
 };
 

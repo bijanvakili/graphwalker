@@ -2,35 +2,16 @@
 
 var ExportedStyles = {
 
-    debugRect: {
-        strokeWidth: 2,
-        stroke: 'red',
-        fill: 'pink',
-
-        width: 11,
-        height: 11,
-    },
-
-    debugPoint: {
-        stroke: 'black',
-        fill: 'black',
-        strokeWidth: 1,
-        width: 1,
-        height: 1,
-    },
-
     canvasMargin: {
         top: 10,
         left: 10,
-        right: 10,
+        right: 10
     },
 
     // styles for icon within a single vertex object
     vertexIcon: {
-        left: 2,
-        top: 2,
-        scaleX: 0.5,
-        scaleY: 0.5,
+        x: 2,
+        y: 2
     },
 
     vertexText: {
@@ -38,38 +19,34 @@ var ExportedStyles = {
         fontSize: 14,
         fill: 'blue',
 
-        left: 16,
-        top: 38,
+        x: 4,
+        y: 20,
 
         // TODO: Find a more accurate way to measure/handle text height
         textHeight: 15,
-        textMargin: 15,
+        textMargin: 10
     },
 
     // TODO: remove this
     vertexRect: {
-        strokeWidth: 5,
+        strokeWidth: 5
     },
 
     edgeLine: {
         strokeWidth: 2,
         stroke: 'black',
+        fill: 'none'
     },
 
     edgeText: {
         fontFamily: 'arial',
         fontStyle: 'italic',
-        fontSize: 10,
+        fontSize: 12,
         fill: 'black',
 
-        left: 40,
-        top: 10,
-    },
-
-    arcTriangleArrow: {
-        originX: 'center',
-        originY: 'center',
-    },
+        x: 40,
+        y: 10
+    }
 };
 
 module.exports = ExportedStyles;

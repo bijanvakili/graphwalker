@@ -9,8 +9,12 @@ body {
     margin: 0px;
 }
 
-div#walker {
+.walkerContainer {
     width: 100%;
     height: 100%;
     margin: 0px;
+}
+
+.offscreen {
+    display: none;
 }

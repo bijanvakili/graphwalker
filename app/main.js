@@ -10,7 +10,7 @@ init = function(body) {
     var settings,
         graph;
 
-    FabricStyles.addStyles(styles);
+    SvgStyles.addStyles(styles);
 
     settings = new Settings();
     settings.fetch({
@@ -19,7 +19,7 @@ init = function(body) {
         },
         success: function(model, response, options) {
             graph = new Graph({
-                graphDataFile: settings.get("graphDataFile"),
+                graphDataFile: settings.get("graphDataFile")
             });
             graph.fetch({
                 error: function (model, response, options) {
@@ -28,13 +28,13 @@ init = function(body) {
                 success: function(model, response, options) {
                     window.router = new Navigator({
                         settings: settings,
-                        graph: graph,
+                        graph: graph
                     });
 
                     Backbone.history.start();
-                },
+                }
             });
-        },
+        }
     });
 };
 

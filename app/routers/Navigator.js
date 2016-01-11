@@ -38,6 +38,9 @@ Navigator = Backbone.Router.extend({
     },
 
     onMove: function(appName, modelName) {
+        if (!_.isNull(this.view)) {
+            this.view.remove();
+        }
         this.view = null;
         this.view = new DirectNeighborView({
             settings: this.settings,
@@ -47,7 +50,7 @@ Navigator = Backbone.Router.extend({
                 modelName: modelName,
             },
         });
-        this.view.render();
+        this.view.render($('.walkerContainer')[0]);
     },
 });
 

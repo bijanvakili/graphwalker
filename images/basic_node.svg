@@ -9,8 +9,8 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64"
-   height="64"
+   width="16"
+   height="16"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
@@ -51,16 +51,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-988.36218)">
-    <path
-       sodipodi:type="arc"
-       style="fill:#009580;fill-opacity:1;stroke:#7f7f7f;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       id="path3772"
-       sodipodi:cx="56.568542"
-       sodipodi:cy="51.87817"
-       sodipodi:rx="35.355339"
-       sodipodi:ry="35.355339"
-       d="m 91.923882,51.87817 a 35.355339,35.355339 0 1 1 -70.710679,0 35.355339,35.355339 0 1 1 70.710679,0 z"
-       transform="matrix(0.88020084,0,0,0.88020084,-17.791679,974.69897)" />
+     >
+<circle id="SvgjsCircle1007" r="6" cx="8" cy="8" style="fill: rgb(0, 149, 128); fill-opacity: 1; stroke: rgb(127, 127, 127); stroke-width: 2px; stroke-miterlimit: 4; stroke-opacity: 1; stroke-dasharray: none;"></circle>
   </g>
 </svg>

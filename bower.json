@@ -5,6 +5,6 @@
     "jquery": "2.1.4",
     "underscore": "1.8.3",
     "backbone": "1.2.2",
-    "fabric": "1.5.0"
+    "svg": "git@github.com:wout/svg.js#2.2.5"
   }
 }

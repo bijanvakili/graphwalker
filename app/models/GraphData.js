@@ -172,9 +172,9 @@ Graph = Backbone.Model.extend({
 });
 
 module.exports = {
-    Vertex,
-    Vertices,
-    Edge,
-    Edges,
-    Graph,
-}
+    Vertex: Vertex,
+    Vertices: Vertices,
+    Edge: Edge,
+    Edges: Edges,
+    Graph: Graph,
+};

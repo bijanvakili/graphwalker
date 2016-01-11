@@ -94,7 +94,7 @@ createBundle(
             'underscore': makeBowerPath('underscore'),
             'jquery': makeBowerPath('jquery', 'dist'),
             'backbone': makeBowerPath('backbone'),
-            'fabric': makeBowerPath('fabric', 'dist'),
+            'svg': makeBowerPath('svg', 'dist'),
         },
         verbose: false
     })

@@ -1,35 +1,34 @@
 'use strict';
 
 var BaseViewGroup = require('app/views/objects/BaseViewGroup'),
-    SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
     EdgeObject,
     EdgeDirectionIndicatorObject;
 
+EdgeObject = function(options) {
+    BaseViewGroup.call(this, options);
+};
+EdgeObject.prototype = Object.create(BaseViewGroup.prototype);
+EdgeObject.prototype.constructor = EdgeObject;
 
-EdgeObject = fabric.util.createClass(BaseViewGroup, {
+_.extend(EdgeObject.prototype, {
     edgeData: null,
     edgeType: null,
     endpointObjects: [],
-    initOptions: {},
 
     /*
      * constructor
+     * @param options {} fabric Object options
      * @param model {models.GraphData.Edge} graph edge data
      * @param startVertexObject {views.objects.VertexObject} starting vertex
      * @param endVertexObject {views.objects.VertexObject} end vertex
      * @param edgeType ('incoming' or 'outgoing')
-     * @param options {} fabric Object options
      */
-    initialize: function(model, startVertexObject, endVertexObject, edgeType, options) {
-        this.callSuper('initialize', options);
-
+    initialize: function(options) {
         var self = this;
 
-
-        self.edgeData = model;
-        self.edgeType = edgeType;
-        self.initOptions = options;
-        self.endpointObjects = [startVertexObject, endVertexObject];
+        self.edgeData = options.model;
+        self.edgeType = options.edgeType;
+        self.endpointObjects = [options.startVertexObject, options.endVertexObject];
 
         self._onAllEndpointsInitialized();
     },
@@ -38,7 +37,8 @@ EdgeObject = fabric.util.createClass(BaseViewGroup, {
         var endpoints = [],
             segmentPoints = [],
             vectorEdge,
-            i,
+            edgeLineObj,
+            labelObjStyle,
             labelObj,
             textAnchorPoint;
 
@@ -47,30 +47,35 @@ EdgeObject = fabric.util.createClass(BaseViewGroup, {
         endpoints.push(this.endpointObjects[1].getConnectionPoint('left'));
 
         // break edge into 3 segments
-        vectorEdge = endpoints[1].subtract(endpoints[0]);
+        vectorEdge = {
+            x: endpoints[1].x - endpoints[0].x,
+            y: endpoints[1].y - endpoints[0].y
+        };
         segmentPoints.push(endpoints[0]);
-        segmentPoints.push(new fabric.Point(
-            endpoints[0].x + vectorEdge.x * 1/3,
-            endpoints[0].y
-        ));
-        segmentPoints.push(new fabric.Point(
-            endpoints[0].x + vectorEdge.x * 2/3,
-            endpoints[1].y
-        ));
+        segmentPoints.push({
+            x: endpoints[0].x + vectorEdge.x * 1 / 3,
+            y: endpoints[0].y
+        });
+        segmentPoints.push({
+            x: endpoints[0].x + vectorEdge.x * 2 / 3,
+            y: endpoints[1].y
+        });
         segmentPoints.push(endpoints[1]);
 
-        for (i = 1; i < segmentPoints.length; ++i) {
-            this.add(
-                new fabric.Line(
-                    [segmentPoints[i-1].x, segmentPoints[i-1].y, segmentPoints[i].x, segmentPoints[i].y]
-                ).withStyles('edgeLine')
-            );
-        }
+        edgeLineObj = this.svg.polyline(_.map(segmentPoints, function(p) {
+            return [p.x, p.y];
+        })).style(SvgStyles.getStyles('edgeLine'));
+        this.group.add(edgeLineObj);
 
         // draw the label adjacent to the first segment
-        labelObj = new fabric.Text(
-            this.edgeData.get('label')
-        ).withStyles('edgeText');
+        labelObjStyle = SvgStyles.getStyles('edgeText');
+        labelObj = this.svg.text(this.edgeData.get('label'))
+            .font({
+                family: labelObjStyle.fontFamily,
+                size: labelObjStyle.fontSize,
+                fill: labelObjStyle.fontFill,
+                style: labelObjStyle.fontStyle,
+            });
 
         if (this.edgeType == 'incoming') {
             textAnchorPoint = segmentPoints[0];
@@ -78,37 +83,38 @@ EdgeObject = fabric.util.createClass(BaseViewGroup, {
         else {
             textAnchorPoint = segmentPoints[2];
         }
-        labelObj.setOptions({
-            left: textAnchorPoint.x + labelObj.left,
-            top: textAnchorPoint.y + labelObj.top,
-        })
+        labelObj.move(textAnchorPoint.x, textAnchorPoint.y);
+        this.group.add(labelObj);
 
-        this.add(labelObj);
-
-        this.trigger('initialized', this);
-    },
+        this.group.fire('initialized', this);
+    }
 });
 
+EdgeDirectionIndicatorObject = function(options) {
+    BaseViewGroup.call(this, options);
+};
+EdgeDirectionIndicatorObject.prototype = Object.create(BaseViewGroup.prototype);
+EdgeDirectionIndicatorObject.prototype.constructor = EdgeDirectionIndicatorObject;
 
-EdgeDirectionIndicatorObject = fabric.util.createClass(BaseViewGroup, {
+_.extend(EdgeDirectionIndicatorObject.prototype, {
 
     initialize: function(options) {
         var self = this;
 
-        this.callSuper('initialize', options);
-
         // TODO Try moving the SVG name into the styles
-        SvgTemplateCache.fetch('arrow.svg', {
-            success: function(arrowObj) {
-                self.addWithUpdate(arrowObj);
-                self.trigger('initialized', self);
-            }
+        this.addImage('arrow.svg', function(arrowObj) {
+            arrowObj.dmove(
+                -0.5 * (arrowObj.width() + 1),
+                -0.5 * (arrowObj.height() + 1)
+            );
+            self.group.transform(_.pick(self.options, ['x', 'y']));
+            self.group.fire('initialized', this);
         });
-    },
-
+    }
 });
 
+
 module.exports = {
-    EdgeObject,
-    EdgeDirectionIndicatorObject
+    EdgeObject: EdgeObject,
+    EdgeDirectionIndicatorObject : EdgeDirectionIndicatorObject
 };

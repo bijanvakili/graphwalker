@@ -9,8 +9,15 @@
     <script type="text/javascript" src="./build/bundle-app.js"></script>
 </head>
 <body onload="init();">
-    <div id="walker">
-        <canvas id="view" width="150" height="150"></canvas>
+    <!-- on screen elements -->
+    <div class="walkerContainer">
+        <!-- SVG content will be renedered here -->
+    </div>
+
+    <!-- offscreen elements -->
+    <div class="offscreen">
+        <!-- for measuring text -->
+        <canvas id="textMeasure" class="offscreen"></canvas>
     </div>
 </body>
 </html>

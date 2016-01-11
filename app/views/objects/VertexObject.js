@@ -1,10 +1,15 @@
 'use strict';
 
-var SvgTemplateCache = require('app/views/objects/SvgTemplateCache'),
-    BaseViewGroup = require('app/views/objects/BaseViewGroup'),
+var BaseViewGroup = require('app/views/objects/BaseViewGroup'),
     VertexObject;
 
-var VertexObject = fabric.util.createClass(BaseViewGroup, {
+VertexObject = function(options) {
+    BaseViewGroup.call(this, options);
+};
+VertexObject.prototype = Object.create(BaseViewGroup.prototype);
+VertexObject.prototype.constructor = VertexObject;
+
+_.extend(VertexObject.prototype, Backbone.Events, {
 
     vertexData: null,
     iconObj: null,
@@ -12,23 +17,16 @@ var VertexObject = fabric.util.createClass(BaseViewGroup, {
 
     /*
      * constructor
-     * @param {models.GraphData.Vertex} graph vertex data
-     * @param options {} fabric Object options
-     *
      * @event initialized: fabric event to indicate that the object is ready to be added to the canvas
      */
-    initialize: function(model, options) {
+    initialize: function(options) {
         var self = this;
 
-        this.callSuper('initialize', options);
-        this.vertexData = model;
-
+        self.vertexData = options.model;
         // TODO Try moving the SVG name into the styles
-        SvgTemplateCache.fetch('basic_node.svg', {
-            success: function(iconObj) {
-                self.iconObj = iconObj;
-                self._initializeComponents();
-            }
+        self.addImage('basic_node.svg', function(iconObj) {
+            self.iconObj = iconObj;
+            self._initializeComponents();
         });
     },
 
@@ -36,42 +34,62 @@ var VertexObject = fabric.util.createClass(BaseViewGroup, {
      * Retrieves the coordinate for which to connect an edge
      */
     getConnectionPoint: function(side) {
-        var iconBoundingRect,
+        var iconInfo,
             vertexAbsPosition,
             xOffset;
 
-        iconBoundingRect = this.iconObj.getBoundingRect();
-        vertexAbsPosition = new fabric.Point(this.getLeft(),this.getTop());
+        iconInfo = _.extend({}, this.iconObj.attr());
+        vertexAbsPosition = _.pick(this.options, ['x', 'y']);
         if (side == 'left') {
             xOffset = 0;
         }
         else if (side == 'right') {
-            xOffset = iconBoundingRect.width;
+            xOffset = iconInfo.width - 1;
         }
         else {
             // TODO add better error handling
             alert('unrecognized side');
         }
 
-        return vertexAbsPosition.add({
-            // TODO find a simpler way to handle scalar transforms
-            x: (iconBoundingRect.left + xOffset) * this.iconObj.getScaleX(),
-            y: ((iconBoundingRect.top + iconBoundingRect.height) / 2.0) * this.iconObj.getScaleY()
-        });
+        return {
+            x: vertexAbsPosition.x + iconInfo.x + xOffset,
+            y: vertexAbsPosition.y + ((iconInfo.y + iconInfo.height) / 2.0) + 1
+        };
     },
 
     _initializeComponents: function() {
-        var labelText;
+        var self,
+            labelText,
+            vertexIconStyle,
+            labelTextStyle;
 
-        this.iconObj = this.iconObj.withStyles('vertexIcon');
-        labelText = this.vertexData.get('modelName');
-        this.labelObj = new fabric.Text(labelText).withStyles('vertexText');
+        self = this;
+        vertexIconStyle = SvgStyles.getStyles('vertexIcon');
+        self.iconObj.move(vertexIconStyle.x, vertexIconStyle.y);
+        self.iconObj.click(function () {
+            self.onClick();
+        });
 
-        this.add(this.iconObj);
-        this.add(this.labelObj);
+        labelTextStyle = SvgStyles.getStyles('vertexText');
+        labelText = self.vertexData.get('modelName');
+        self.labelObj = self.svg.text(labelText)
+            .attr(_.pick(labelTextStyle, ['x', 'y', 'fill']))
+            .font({
+                family: labelTextStyle.fontFamily,
+                size: labelTextStyle.fontSize,
+            })
+            .click( function () {
+                self.onClick();
+            });
 
-        this.trigger('initialized', this);
+        self.group.add(this.labelObj);
+        self.group.transform(_.pick(this.options, ['x', 'y']));
+        self.group.fire('initialized', this);
     },
+
+    onClick: function () {
+        this.trigger('model:selected', this.vertexData);
+    }
 });
 
 module.exports = VertexObject;

@@ -3,21 +3,18 @@
 var _,
     $,
     Backbone,
-    fabric,
-    FabricStyles,
-    FabricPatches;
+    SVG,
+    SvgStyles;
 
 $ = require('jquery');
 _ = require('underscore');
 Backbone = require('backbone');
 Backbone.$ = $;
-fabric = require('fabric').fabric;
-FabricStyles = require('./lib/fabric.styles');
-FabricPatches = require('./lib/fabric.patches');
+SVG = require('svg');
+SvgStyles = require('./lib/svg.styles');
 
 window.$ = $;
 window._ = _;
 window.Backbone = Backbone;
-window.fabric = fabric;
-window.FabricStyles = FabricStyles;
-window.FabricPatches = FabricPatches;
+window.SVG = SVG;
+window.SvgStyles = SvgStyles;

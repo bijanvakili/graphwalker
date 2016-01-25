@@ -82,26 +82,15 @@ DirectNeighborView = Backbone.View.extend({
         xTargetNode = (svg.width() / 2) - (textMetrics.width / 2);
 
         anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function() {
-            var onEdgeInitialized,
-                edgeOptions,
+            var edgeOptions,
                 yArcEnd;
 
             yArcEnd = targetNodeObject.getConnectionPoint('left').y +
                 SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;
 
-            // add the nodes to the canvas
-            //_.each(_.union([targetNodeObject], incomingNodeObjects, outgoingNodeObjects), function(vertexObject) {
-            //    canvas.add(vertexObject);
-            //});
-            //
-            onEdgeInitialized = function(edgeObject) {
-               //canvas.add(edgeObject);
-            };
-
             // draw all edges
             edgeOptions = {
-                svg: svg,
-                onInitialized: onEdgeInitialized
+                svg: svg
             };
             if (incoming.length > 0) {
                 var xMid,
@@ -203,13 +192,7 @@ DirectNeighborView = Backbone.View.extend({
         new EdgeDirectionIndicatorObject({
             svg: svg,
             x: x,
-            y: y,
-            onInitialized: function(obj) {
-                // set styles here prior since SVG may be loaded from cache
-
-                // TODO remove this
-                //obj.withStyles('arcTriangleArrow');
-            }
+            y: y
         });
     },
 

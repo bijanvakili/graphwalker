@@ -105,6 +105,9 @@ Graph = Backbone.Model.extend({
                     });
 
                     if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
+                        var criteria = null,
+                            existingEdge = null;
+
                         // invert direction for inheritance
                         if (relation['type'] == 'inheritance') {
                             var temp = sourceVertex;
@@ -112,13 +115,23 @@ Graph = Backbone.Model.extend({
                             destVertex = temp;
                         }
 
-                        edges.add({
+                        // avoid duplication and merge where possible
+                        criteria = {
                             source: sourceVertex,
                             dest: destVertex,
                             type: relation['type'],
+                        };
+                        existingEdge = edges.findWhere(criteria);
+                        if (_.isUndefined(existingEdge)) {
                             // TODO: parse label
-                            label: relation['name'],
-                        });
+                            criteria.label = relation['name'];
+                            edges.add(criteria);
+                        }
+                        else {
+                            existingEdge.set({
+                                label: existingEdge.get('label') + ', ' + relation['name']
+                            });
+                        }
                     }
                 });
             });

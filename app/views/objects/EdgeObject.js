@@ -40,6 +40,7 @@ _.extend(EdgeObject.prototype, {
             edgeLineObj,
             labelObjStyle,
             labelObj,
+            labelText,
             textAnchorPoint;
 
         // assume edges always move right to left
@@ -67,9 +68,14 @@ _.extend(EdgeObject.prototype, {
         })).style(SvgStyles.getStyles('edgeLine'));
         this.group.add(edgeLineObj);
 
+        labelText = this.edgeData.get('label');
+        if (!_.isNull(this.edgeData.get('multiplicity'))) {
+            labelText = labelText + ' (' + this.edgeData.get('multiplicity') + ')';
+        }
+
         // draw the label adjacent to the first segment
         labelObjStyle = SvgStyles.getStyles('edgeText');
-        labelObj = this.svg.text(this.edgeData.get('label'))
+        labelObj = this.svg.text(labelText)
             .font({
                 family: labelObjStyle.fontFamily,
                 size: labelObjStyle.fontSize,

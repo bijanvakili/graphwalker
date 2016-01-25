@@ -4,8 +4,16 @@ var Graph,
     Vertex,
     Vertices,
     Edge,
-    Edges;
+    Edges,
+    MULTIPLICITY_MAP;
 
+// maps Django type to multiplicity
+// contains both forward and reverse versions
+MULTIPLICITY_MAP = {
+    'ForeignKey': '*..1',
+    'ManyToManyField': '*..*',
+    'OneToOneField': '1..1'
+};
 
 Vertex = Backbone.Model.extend({
     defaults: {
@@ -45,12 +53,12 @@ Edge = Backbone.Model.extend({
         dest: null,
         type: "ForeignKey",
         label: "",
+        multiplicity: null,
     },
 
     isInheritanceRelation: function() {
         return this.attributes['type'] == 'inheritance';
-    },
-
+    }
 });
 
 
@@ -106,13 +114,17 @@ Graph = Backbone.Model.extend({
 
                     if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
                         var criteria = null,
-                            existingEdge = null;
+                            existingEdge = null,
+                            multiplicity = null;
+
+                        multiplicity = MULTIPLICITY_MAP[relation['type']] || null;
 
                         // invert direction for inheritance
                         if (relation['type'] == 'inheritance') {
                             var temp = sourceVertex;
                             sourceVertex = destVertex;
                             destVertex = temp;
+                            multiplicity = null;
                         }
 
                         // avoid duplication and merge where possible
@@ -123,8 +135,8 @@ Graph = Backbone.Model.extend({
                         };
                         existingEdge = edges.findWhere(criteria);
                         if (_.isUndefined(existingEdge)) {
-                            // TODO: parse label
                             criteria.label = relation['name'];
+                            criteria.multiplicity = multiplicity;
                             edges.add(criteria);
                         }
                         else {

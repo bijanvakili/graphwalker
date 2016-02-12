@@ -83,7 +83,16 @@ DirectNeighborView = Backbone.View.extend({
 
         anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function() {
             var edgeOptions,
-                yArcEnd;
+                yArcEnd,
+                newHeight;
+
+            // resize SVG based on the number of nodes
+            svg.height(
+                _.max([
+                    window.innerHeight,
+                    canvasMargin.top + _.max([incoming.length, outgoing.length]) * self.getNodeHeight()
+                ])
+            );
 
             yArcEnd = targetNodeObject.getConnectionPoint('left').y +
                 SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;

@@ -1,7 +1,7 @@
 {
-  "graphDataFile": "bph_api_pretty.json",
+  "graphDataFile": "sentry_models.json",
   "start": {
-    "app": "payments",
-    "model": "ChargeGroup"
+    "app": "sentry",
+    "model": "Team"
   }
 }

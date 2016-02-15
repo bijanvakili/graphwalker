@@ -32,3 +32,21 @@ Run the following:
 (NOTE: This will implicitly run a build)
 
 Open the following URL in your web browser: [http://localhost:8888/traverse.html](http://localhost:8888/traverse.html)
+
+## Configuration
+
+Edit `data/config.json` to specify how to load your graph data
+
+    {
+      "graphDataFile": "<yourdata.json>",
+      "useParser": "<parser>",
+      "start": {
+        "app": "...",
+        "model": "<starting model>"
+      }
+    }
+
+Available JSON parsers are:
+
+- `django` (from `django-extensions` `graph_models` command with `--json` option)
+- `sequelize` (custom sequelize parser)

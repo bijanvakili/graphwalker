@@ -19,7 +19,8 @@ init = function(body) {
         },
         success: function(model, response, options) {
             graph = new Graph({
-                graphDataFile: settings.get("graphDataFile")
+                graphDataFile: settings.get("graphDataFile"),
+                useParser: settings.get("useParser")
             });
             graph.fetch({
                 error: function (model, response, options) {

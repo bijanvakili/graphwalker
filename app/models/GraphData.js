@@ -1,19 +1,12 @@
 'use strict';
 
+var Parsers = require('app/models/Parsers');
+
 var Graph,
     Vertex,
     Vertices,
     Edge,
-    Edges,
-    MULTIPLICITY_MAP;
-
-// maps Django type to multiplicity
-// contains both forward and reverse versions
-MULTIPLICITY_MAP = {
-    'ForeignKey': '*..1',
-    'ManyToManyField': '*..*',
-    'OneToOneField': '1..1'
-};
+    Edges;
 
 Vertex = Backbone.Model.extend({
     defaults: {
@@ -71,6 +64,7 @@ Graph = Backbone.Model.extend({
 
     defaults: {
         graphDataFile: null,
+        useParser: null,
         vertices: new Vertices(),
         edges: new Edges(),
     },
@@ -80,78 +74,21 @@ Graph = Backbone.Model.extend({
     },
 
     parse: function(response, options) {
-        var vertices,
-            edges;
+        var parser,
+            result;
 
-        // parse known vertices
-        vertices = new Vertices();
-        _.each(response['graphs'], function (graph) {
-            _.each(graph['models'], function (model) {
-                vertices.add({
-                    internalAppName: model['app_name'],
-                    appName: graph['app_name'],
-                    modelName: model['name']
-                });
-            });
+        parser = new Parsers[this.get('useParser')]({
+            vertices: this.get('vertices'),
+            edges: this.get('edges')
         });
-
-        // parse edges
-        edges = new Edges();
-        _.each(response['graphs'], function (graph) {
-            _.each(graph['models'], function (model) {
-                _.each(model['relations'], function (relation) {
-                    var sourceVertex,
-                        destVertex;
-
-                    sourceVertex = vertices.findWhere({
-                        appName: graph['app_name'],
-                        modelName: model['name']
-                    });
-                    destVertex = vertices.findWhere({
-                        internalAppName: relation['target_app'],
-                        modelName: relation['target'],
-                    });
-
-                    if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
-                        var criteria = null,
-                            existingEdge = null,
-                            multiplicity = null;
-
-                        multiplicity = MULTIPLICITY_MAP[relation['type']] || null;
-
-                        // invert direction for inheritance
-                        if (relation['type'] == 'inheritance') {
-                            var temp = sourceVertex;
-                            sourceVertex = destVertex;
-                            destVertex = temp;
-                            multiplicity = null;
-                        }
-
-                        // avoid duplication and merge where possible
-                        criteria = {
-                            source: sourceVertex,
-                            dest: destVertex,
-                            type: relation['type'],
-                        };
-                        existingEdge = edges.findWhere(criteria);
-                        if (_.isUndefined(existingEdge)) {
-                            criteria.label = relation['name'];
-                            criteria.multiplicity = multiplicity;
-                            edges.add(criteria);
-                        }
-                        else {
-                            existingEdge.set({
-                                label: existingEdge.get('label') + ', ' + relation['name']
-                            });
-                        }
-                    }
-                });
-            });
-        });
+        if (_.isUndefined(parser)) {
+            throw new Error('Invalid parser: ' + this.get('useParser'));
+        }
+        result = parser.parse(response);
 
         return {
-            vertices: vertices,
-            edges: edges,
+            vertices: result.vertices,
+            edges: result.edges,
             graphDataFile: this.graphDataFile,
         };
     },

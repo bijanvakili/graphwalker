@@ -1,5 +1,6 @@
 {
   "graphDataFile": "sentry_models.json",
+  "useParser": "django",
   "start": {
     "app": "sentry",
     "model": "Team"

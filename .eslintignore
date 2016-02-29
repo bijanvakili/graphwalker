@@ -1,0 +1,8 @@
+.vagrant
+node_modules
+bower_components
+build
+tmp
+data
+doc
+images

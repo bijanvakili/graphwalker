@@ -1,21 +1,24 @@
-(function(root, factory) {
+/* eslint strict: 0 */
 
-  if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'svg', 'exports'], function(_, SVG, exports) {
-        root.SvgStyles = factory(root, exports, _, SVG);
-    });
-  }
-  else if (typeof exports !== 'undefined') {
-    var _ = require('underscore'),
-        SVG = require('svg');
+/* global define */
+(function (root, factory) {
 
-    module.exports = factory(root, exports, _, SVG);
-  }
-  else {
-    // browser global
-    root.SvgStyles = factory(root, {}, root._, root.SVG);
-  }
-}(this, function(root, SvgStyles, _, SVG) {
+    if (typeof define === 'function' && define.amd) {
+        define(['underscore', 'svg', 'exports'], function (_, SVG, exports) {
+            root.SvgStyles = factory(root, exports, _, SVG);
+        });
+    }
+    else if (typeof exports !== 'undefined') {
+        var _ = require('underscore');
+        var SVG = require('svg');
+
+        module.exports = factory(root, exports, _, SVG);
+    }
+    else {
+        // browser global
+        root.SvgStyles = factory(root, {}, root._, root.SVG);
+    }
+}(this, function (root, SvgStyles, _, SVG) {
     'use strict';
 
     _.extend(SvgStyles, {
@@ -24,13 +27,15 @@
 
         _allStyles: {},
 
-        addStyles: function(styles) {
+        addStyles: function (styles) {
             _.extend(this._allStyles, styles);
         },
 
-        getStyles: function(styles) {
+        getStyles: function (styles) {
             if (_.isArray(styles)) {
-                return _.map(styles, function(style) { return this._allStyles[style]; }, this);
+                return _.map(styles, function (style) {
+                    return this._allStyles[style];
+                }, this);
             }
             else {
                 return this._allStyles[styles];
@@ -40,7 +45,7 @@
 
     _.extend(SVG.Element.prototype, {
 
-        withStyles: function(styles) {
+        withStyles: function (styles) {
             var unmergedStyles,
                 modifiedOptions;
 
@@ -48,7 +53,9 @@
             if (_.isArray(unmergedStyles)) {
                 modifiedOptions = _.reduce(
                     unmergedStyles,
-                    function (memo, styleData) { return _.extend(memo, styleData); }
+                    function (memo, styleData) {
+                        return _.extend(memo, styleData);
+                    }
                 );
             }
             else {

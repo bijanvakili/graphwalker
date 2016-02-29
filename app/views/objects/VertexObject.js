@@ -1,9 +1,9 @@
 'use strict';
 
-var BaseViewGroup = require('app/views/objects/BaseViewGroup'),
-    VertexObject;
+var BaseViewGroup = require('app/views/objects/BaseViewGroup');
+var VertexObject;
 
-VertexObject = function(options) {
+VertexObject = function (options) {
     BaseViewGroup.call(this, options);
 };
 VertexObject.prototype = Object.create(BaseViewGroup.prototype);
@@ -19,12 +19,12 @@ _.extend(VertexObject.prototype, Backbone.Events, {
      * constructor
      * @event initialized: fabric event to indicate that the object is ready to be added to the canvas
      */
-    initialize: function(options) {
+    initialize: function (options) {
         var self = this;
 
         self.vertexData = options.model;
         // TODO Try moving the SVG name into the styles
-        self.addImage('basic_node.svg', function(iconObj) {
+        self.addImage('basic_node.svg', function (iconObj) {
             self.iconObj = iconObj;
             self._initializeComponents();
         });
@@ -33,17 +33,17 @@ _.extend(VertexObject.prototype, Backbone.Events, {
     /*
      * Retrieves the coordinate for which to connect an edge
      */
-    getConnectionPoint: function(side) {
+    getConnectionPoint: function (side) {
         var iconInfo,
             vertexAbsPosition,
             xOffset;
 
         iconInfo = _.extend({}, this.iconObj.attr());
         vertexAbsPosition = _.pick(this.options, ['x', 'y']);
-        if (side == 'left') {
+        if (side === 'left') {
             xOffset = 0;
         }
-        else if (side == 'right') {
+        else if (side === 'right') {
             xOffset = iconInfo.width - 1;
         }
         else {
@@ -57,7 +57,7 @@ _.extend(VertexObject.prototype, Backbone.Events, {
         };
     },
 
-    _initializeComponents: function() {
+    _initializeComponents: function () {
         var self,
             labelText,
             vertexIconStyle,
@@ -76,9 +76,9 @@ _.extend(VertexObject.prototype, Backbone.Events, {
             .attr(_.pick(labelTextStyle, ['x', 'y', 'fill']))
             .font({
                 family: labelTextStyle.fontFamily,
-                size: labelTextStyle.fontSize,
+                size: labelTextStyle.fontSize
             })
-            .click( function () {
+            .click(function () {
                 self.onClick();
             });
 

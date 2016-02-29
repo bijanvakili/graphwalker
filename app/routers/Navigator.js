@@ -1,43 +1,42 @@
 'use strict';
 
-var DirectNeighborView = require('app/views/DirectNeighborView'),
-    Navigator;
+var DirectNeighborView = require('app/views/DirectNeighborView');
 
-Navigator = Backbone.Router.extend({
+var Navigator = Backbone.Router.extend({
 
     settings: null,
     graph: null,
     view: null,
 
     routes: {
-      ":appName/:model": "moveToQualifiedVertex",
-      ":model":          "moveToUnqualifiedVertex",
-      "":                "moveToStartVertex",
+        ':appName/:model': 'moveToQualifiedVertex',
+        ':model':          'moveToUnqualifiedVertex',
+        '':                'moveToStartVertex'
     },
 
-    initialize: function(options) {
+    initialize: function (options) {
         this.settings = options.settings;
         this.graph = options.graph;
     },
 
-    moveToStartVertex: function() {
+    moveToStartVertex: function () {
         var startNode = this.settings.get('start');
 
         this.onMove(startNode['app'], startNode['model']);
     },
 
-    moveToQualifiedVertex: function(appName, modelName) {
+    moveToQualifiedVertex: function (appName, modelName) {
         this.onMove(appName, modelName);
     },
 
-    moveToUnqualifiedVertex: function(modelName) {
+    moveToUnqualifiedVertex: function (modelName) {
         var defaultApp;
 
         defaultApp = this.settings.get('start')['app'];
         this.onMove(defaultApp, modelName);
     },
 
-    onMove: function(appName, modelName) {
+    onMove: function (appName, modelName) {
         if (!_.isNull(this.view)) {
             this.view.remove();
         }
@@ -47,11 +46,11 @@ Navigator = Backbone.Router.extend({
             model: this.graph,
             target: {
                 appName: appName,
-                modelName: modelName,
-            },
+                modelName: modelName
+            }
         });
         this.view.render($('.walkerContainer')[0]);
-    },
+    }
 });
 
 module.exports = Navigator;

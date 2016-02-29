@@ -42,7 +42,7 @@ var ExportedStyles = {
         fontFamily: 'arial',
         fontStyle: 'italic',
         fontSize: 12,
-        fill: 'black',
+        fontFill: 'black',
 
         x: 40,
         y: 10

@@ -8,24 +8,24 @@ var Graph,
     Edge,
     Edges;
 
+
 Vertex = Backbone.Model.extend({
     defaults: {
-        modelName: "",
-        appName: "",
-        internalAppName: "",
+        modelName: '',
+        appName: '',
+        internalAppName: ''
     },
 
-    isEqual: function(query) {
-        return this.get('appName') == query['appName'] &&
-            this.get('modelName') == query['modelName'];
-    },
+    isEqual: function (query) {
+        return this.get('appName') === query['appName'] &&
+            this.get('modelName') === query['modelName'];
+    }
 });
-
 
 Vertices = Backbone.Collection.extend({
     model: Vertex,
 
-    findOrCreateVertex: function(query) {
+    findOrCreateVertex: function (query) {
         var vertex;
 
         vertex = _.find(this.models, function (vertex) {
@@ -44,19 +44,19 @@ Edge = Backbone.Model.extend({
     defaults: {
         source: null,
         dest: null,
-        type: "ForeignKey",
-        label: "",
-        multiplicity: null,
+        type: 'ForeignKey',
+        label: '',
+        multiplicity: null
     },
 
-    isInheritanceRelation: function() {
-        return this.attributes['type'] == 'inheritance';
+    isInheritanceRelation: function () {
+        return this.attributes['type'] === 'inheritance';
     }
 });
 
 
 Edges = Backbone.Collection.extend({
-    model: Edge,
+    model: Edge
 });
 
 
@@ -66,14 +66,14 @@ Graph = Backbone.Model.extend({
         graphDataFile: null,
         useParser: null,
         vertices: new Vertices(),
-        edges: new Edges(),
+        edges: new Edges()
     },
 
     urlRoot: function () {
-        return 'data/' + this.get("graphDataFile");
+        return 'data/' + this.get('graphDataFile');
     },
 
-    parse: function(response, options) {
+    parse: function (response, options) {
         var parser,
             result;
 
@@ -89,11 +89,11 @@ Graph = Backbone.Model.extend({
         return {
             vertices: result.vertices,
             edges: result.edges,
-            graphDataFile: this.graphDataFile,
+            graphDataFile: this.graphDataFile
         };
     },
 
-    findVertex: function(query) {
+    findVertex: function (query) {
         return this.get('vertices').findWhere(query);
     },
 
@@ -105,10 +105,10 @@ Graph = Backbone.Model.extend({
         return this.getNeighbors(vertex, true);
     },
 
-    getNeighbors: function(vertex, isIncoming) {
+    getNeighbors: function (vertex, isIncoming) {
         var neighbors = [];
 
-        _.each(this.get('edges').models, function(edge) {
+        _.each(this.get('edges').models, function (edge) {
             var attrMatch,
                 attrCollect;
 
@@ -124,13 +124,13 @@ Graph = Backbone.Model.extend({
             if (edge.get(attrMatch).isEqual(vertex.attributes)) {
                 neighbors.push({
                     'vertex': edge.get(attrCollect),
-                    'edge': edge,
+                    'edge': edge
                 });
             }
         });
 
         return neighbors;
-    },
+    }
 });
 
 module.exports = {
@@ -138,5 +138,5 @@ module.exports = {
     Vertices: Vertices,
     Edge: Edge,
     Edges: Edges,
-    Graph: Graph,
+    Graph: Graph
 };

@@ -1,10 +1,10 @@
 'use strict';
 
-var VertexObject = require('app/views/objects/VertexObject'),
-    EdgeObjectModule = require('app/views/objects/EdgeObject'),
-    EdgeObject,
-    EdgeDirectionIndicatorObject,
-    DirectNeighborView;
+var VertexObject = require('app/views/objects/VertexObject');
+var EdgeObjectModule = require('app/views/objects/EdgeObject');
+var EdgeObject;
+var EdgeDirectionIndicatorObject;
+var DirectNeighborView;
 
 EdgeObject = EdgeObjectModule.EdgeObject;
 EdgeDirectionIndicatorObject = EdgeObjectModule.EdgeDirectionIndicatorObject;
@@ -14,19 +14,19 @@ DirectNeighborView = Backbone.View.extend({
     tagName: 'svg',
 
     events: {
-      "graphLoaded": "onGraphLoaded",
+        graphLoaded: 'onGraphLoaded'
     },
 
-    reportError: function(message, response) {
+    reportError: function (message, response) {
         alert(message);
         console.log(response.responseText);
     },
 
-    initialize: function(options) {
+    initialize: function (options) {
         this.target = options.target;
     },
 
-    render: function(parent) {
+    render: function (parent) {
         var graph,
             targetNode;
 
@@ -47,22 +47,8 @@ DirectNeighborView = Backbone.View.extend({
         return this;
     },
 
-    drawLocalModelGraph: function(parent, model, incoming, outgoing) {
-        var self = this,
-            svg,
-            modelName,
-            textMargin,
-            textMetrics,
-            canvasMargin,
-            rectBorderWidth,
-            xIncoming,
-            xTargetNode,
-            targetNodeObject,
-            incomingNodeObjects,
-            outgoingNodeObjects,
-            anyVertexObjectInitialized;
-
-        svg = new SVG(parent).size(
+    drawLocalModelGraph: function (parent, model, incoming, outgoing) {
+        var svg = new SVG(parent).size(
             window.innerWidth,
             window.innerHeight
         );
@@ -73,15 +59,20 @@ DirectNeighborView = Backbone.View.extend({
         this.setElement(svg.node);
 
         // TODO remove this hack
-        modelName = model.get('modelName');
-        textMetrics = this.getTextDimensions(modelName);
-        textMargin = SvgStyles.getStyles('vertexText').textMargin;
+        var modelName = model.get('modelName');
+        var textMetrics = this.getTextDimensions(modelName);
+        var textMargin = SvgStyles.getStyles('vertexText').textMargin;
 
-        canvasMargin = SvgStyles.getStyles('canvasMargin');
-        rectBorderWidth = SvgStyles.getStyles('vertexRect').strokeWidth;
-        xTargetNode = (svg.width() / 2) - (textMetrics.width / 2);
+        var canvasMargin = SvgStyles.getStyles('canvasMargin');
+        var rectBorderWidth = SvgStyles.getStyles('vertexRect').strokeWidth;
+        var xTargetNode = (svg.width() / 2) - (textMetrics.width / 2);
 
-        anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function() {
+        var self = this;
+        var targetNodeObject;
+        var incomingNodeObjects;
+        var outgoingNodeObjects;
+
+        var anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function () {
             var edgeOptions,
                 yArcEnd;
 
@@ -100,12 +91,11 @@ DirectNeighborView = Backbone.View.extend({
             edgeOptions = {
                 svg: svg
             };
+            var xLeftmost;
+            var xMid;
             if (incoming.length > 0) {
-                var xMid,
-                    xLeftmost;
-
                 for (i = 0; i < incoming.length; ++i) {
-                    new EdgeObject(_.extend({}, edgeOptions, {
+                    new EdgeObject(_.extend({}, edgeOptions, { // eslint-disable-line no-new
                         model: incoming[i].edge,
                         edgeType: 'incoming',
                         startVertexObject: incomingNodeObjects[i],
@@ -117,50 +107,40 @@ DirectNeighborView = Backbone.View.extend({
                 xMid = xLeftmost + (
                     targetNodeObject.getConnectionPoint('left').x -
                     xLeftmost
-                ) * 5/6;
+                ) * 5 / 6;
                 self.drawRightArrow(svg, xMid, yArcEnd);
             }
             if (outgoing.length > 0) {
-                var xMid,
-                    xLeftmost;
-
-                for (i = 0; i < outgoing.length; ++i) {
-                    new EdgeObject(_.extend({}, edgeOptions, {
+                for (var i = 0; i < outgoing.length; ++i) {
+                    new EdgeObject(_.extend({}, edgeOptions, {  // eslint-disable-line no-new
                         model: outgoing[i].edge,
                         edgeType: 'outgoing',
                         startVertexObject: targetNodeObject,
-                        endVertexObject: outgoingNodeObjects[i],
+                        endVertexObject: outgoingNodeObjects[i]
                     }));
                 }
 
                 xLeftmost = targetNodeObject.getConnectionPoint('right').x;
-                xMid = xLeftmost + (
-                    outgoingNodeObjects[0].getConnectionPoint('left').x -
-                    xLeftmost
-                ) * 1/6;
+                xMid = xLeftmost + (outgoingNodeObjects[0].getConnectionPoint('left').x - xLeftmost) / 6;
                 self.drawRightArrow(svg, xMid, yArcEnd);
             }
         });
 
         // draw central target node
-        this.createModelNode(svg, xTargetNode, canvasMargin.top, model, function(vertexObject) {
+        this.createModelNode(svg, xTargetNode, canvasMargin.top, model, function (vertexObject) {
             targetNodeObject = vertexObject;
             anyVertexObjectInitialized();
         });
 
         // draw incoming neighbours
         if (!_.isEmpty(incoming)) {
-            var xArcIncomingStart = xIncoming + maxOutgoingTextWidth,
-                maxIncomingTextWidth;
-
-            xIncoming = canvasMargin.left;
             incomingNodeObjects = [];
             this.createStackFromNodeList(
                 svg,
-                xIncoming,
+                canvasMargin.left,
                 canvasMargin.top,
                 incoming,
-                function(vertexObject) {
+                function (vertexObject) {
                     incomingNodeObjects.push(vertexObject);
                     anyVertexObjectInitialized();
                 }
@@ -169,26 +149,23 @@ DirectNeighborView = Backbone.View.extend({
 
         // draw outgoing neighbours
         if (!_.isEmpty(outgoing)) {
-            var i,
-                maxOutgoingTextWidth,
-                xOutgoing,
-                view = this;
+            var view = this;
 
-            maxOutgoingTextWidth = _.max(
+            var maxOutgoingTextWidth = _.max(
                 _.map(outgoing, function (neighbor) {
                     return view.getTextDimensions(neighbor.vertex.get('modelName')).width;
                 })
             );
 
-            xOutgoing = svg.width() - canvasMargin.right - maxOutgoingTextWidth
-                - (textMargin * 2) - (rectBorderWidth * 2);
+            var xOutgoing = svg.width() - canvasMargin.right - maxOutgoingTextWidth -
+                (textMargin * 2) - (rectBorderWidth * 2);
             outgoingNodeObjects = [];
             this.createStackFromNodeList(
                 svg,
                 xOutgoing,
                 canvasMargin.top,
                 outgoing,
-                function(vertexObject) {
+                function (vertexObject) {
                     outgoingNodeObjects.push(vertexObject);
                     anyVertexObjectInitialized();
                 }
@@ -196,20 +173,15 @@ DirectNeighborView = Backbone.View.extend({
         }
     },
 
-    drawRightArrow: function(svg, x, y) {
-        new EdgeDirectionIndicatorObject({
+    drawRightArrow: function (svg, x, y) {
+        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
             svg: svg,
             x: x,
             y: y
         });
     },
 
-    getTextDimensions: function(s) {
-        var measureContext,
-            fontDescription,
-            fontSettings,
-            textMetrics;
-
+    getTextDimensions: function (s) {
         if (_.isUndefined(this.textMeasureContext)) {
             // TODO textMeasure should move into a separate View
             var textMeasure = $('#textMeasure');
@@ -217,24 +189,24 @@ DirectNeighborView = Backbone.View.extend({
             this.textMeasureContext = textMeasure[0].getContext('2d');
         }
 
-        fontSettings = SvgStyles.getStyles('vertexText');
-        fontDescription = fontSettings.fontSize + 'px ' + fontSettings.fontFamily;
+        var fontSettings = SvgStyles.getStyles('vertexText');
+        var fontDescription = fontSettings.fontSize + 'px ' + fontSettings.fontFamily;
         this.textMeasureContext.font = fontDescription;
-        textMetrics = this.textMeasureContext.measureText(s);
+        var textMetrics = this.textMeasureContext.measureText(s);
 
         return {
             width: textMetrics.width,
             height: fontSettings.textHeight
-        }
+        };
     },
 
-    createModelNode: function(svg, x, y, model, callback) {
+    createModelNode: function (svg, x, y, model, callback) {
         var vertexObject = new VertexObject({
             svg: svg,
             model: model,
             x: x,
             y: y,
-            onInitialized: function(object) {
+            onInitialized: function (object) {
                 callback(object);
             }
         });
@@ -243,16 +215,14 @@ DirectNeighborView = Backbone.View.extend({
         return vertexObject;
     },
 
-    createStackFromNodeList: function(svg, x, y, neighborList, callback) {
-        var nodeHeight,
-            self = this;
-
+    createStackFromNodeList: function (svg, x, y, neighborList, callback) {
         if (_.isNull(neighborList)) {
             return [];
         }
 
-        nodeHeight = this.getNodeHeight();
-        return _.each(neighborList, function(neighbor, index) {
+        var nodeHeight = this.getNodeHeight();
+        var self = this;
+        return _.each(neighborList, function (neighbor, index) {
             var yNode;
 
             yNode = y + (nodeHeight * index);
@@ -260,15 +230,15 @@ DirectNeighborView = Backbone.View.extend({
         });
     },
 
-    getNodeHeight: function() {
-        var rectStyle = SvgStyles.getStyles('vertexRect'),
-            textStyle = SvgStyles.getStyles('vertexText');
+    getNodeHeight: function () {
+        var rectStyle = SvgStyles.getStyles('vertexRect');
+        var textStyle = SvgStyles.getStyles('vertexText');
 
         return textStyle.textHeight +
             (rectStyle.strokeWidth + textStyle.textMargin) * 2;
     },
 
-    onModelSelected: function(vertexModel) {
+    onModelSelected: function (vertexModel) {
         Backbone.history.navigate(
             vertexModel.get('appName') + '/' + vertexModel.get('modelName'),
             true

@@ -4,7 +4,7 @@ var BaseGraphParser,
     DjangoExtensionsGraphParser,
     SequelizeGraphParser;
 
-BaseGraphParser = function(options) {
+BaseGraphParser = function (options) {
     this._vertices = options.vertices;
     this._edges = options.edges;
 };
@@ -15,13 +15,13 @@ _.extend(BaseGraphParser.prototype, {
      * @property vertices -- Vertices
      * @property edges    -- Edges
      */
-    parse: function(response) {
+    parse: function (response) {
         throw new Error('Must implement parse()');
     }
 });
 
 // django-extensions graph parser
-DjangoExtensionsGraphParser = function(options) {
+DjangoExtensionsGraphParser = function (options) {
     BaseGraphParser.call(this, options);
 };
 DjangoExtensionsGraphParser.prototype = Object.create(BaseGraphParser.prototype);
@@ -37,10 +37,10 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
         'OneToOneField': '1..1'
     },
 
-    parse: function(response) {
-        var self = this,
-            vertices = self._vertices,
-            edges = self._edges;
+    parse: function (response) {
+        var self = this;
+        var vertices = self._vertices;
+        var edges = self._edges;
 
         _.each(response['graphs'], function (graph) {
             _.each(graph['models'], function (model) {
@@ -64,18 +64,18 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
                     });
                     destVertex = vertices.findWhere({
                         internalAppName: relation['target_app'],
-                        modelName: relation['target'],
+                        modelName: relation['target']
                     });
 
                     if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
-                        var criteria = null,
-                            existingEdge = null,
-                            multiplicity = null;
+                        var criteria = null;
+                        var existingEdge = null;
+                        var multiplicity = null;
 
                         multiplicity = self._MULTIPLICITY_MAP[relation['type']] || null;
 
                         // invert direction for inheritance
-                        if (relation['type'] == 'inheritance') {
+                        if (relation['type'] === 'inheritance') {
                             var temp = sourceVertex;
                             sourceVertex = destVertex;
                             destVertex = temp;
@@ -86,7 +86,7 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
                         criteria = {
                             source: sourceVertex,
                             dest: destVertex,
-                            type: relation['type'],
+                            type: relation['type']
                         };
                         existingEdge = edges.findWhere(criteria);
                         if (_.isUndefined(existingEdge)) {
@@ -111,7 +111,7 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
     }
 });
 
-SequelizeGraphParser = function(options) {
+SequelizeGraphParser = function (options) {
     BaseGraphParser.call(this, options);
 };
 SequelizeGraphParser.prototype = Object.create(BaseGraphParser.prototype);
@@ -127,10 +127,10 @@ _.extend(SequelizeGraphParser.prototype, {
         'HasOne': '1..1'
     },
 
-    parse: function(response) {
-        var self = this,
-            vertices = self._vertices,
-            edges = self._edges;
+    parse: function (response) {
+        var self = this;
+        var vertices = self._vertices;
+        var edges = self._edges;
 
         // compute all known vertices
         _.each(response, function (model) {
@@ -142,14 +142,11 @@ _.extend(SequelizeGraphParser.prototype, {
         // construct edges from all relations
         _.each(response, function (model) {
             _.each(model.relations, function (relation) {
-                var sourceVertex,
-                    destVertex;
-
-                sourceVertex = vertices.findWhere({
+                var sourceVertex = vertices.findWhere({
                     modelName: model['name']
                 });
-                destVertex = vertices.findWhere({
-                    modelName: relation['target'],
+                var destVertex = vertices.findWhere({
+                    modelName: relation['target']
                 });
 
                 if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
@@ -166,7 +163,7 @@ _.extend(SequelizeGraphParser.prototype, {
                     criteria = {
                         source: sourceVertex,
                         dest: destVertex,
-                        type: relation['type'],
+                        type: relation['type']
                     };
                     existingEdge = edges.findWhere(criteria);
                     if (_.isUndefined(existingEdge)) {

@@ -1,10 +1,10 @@
 'use strict';
 
-var BaseViewGroup = require('app/views/objects/BaseViewGroup'),
-    EdgeObject,
-    EdgeDirectionIndicatorObject;
+var BaseViewGroup = require('app/views/objects/BaseViewGroup');
+var EdgeObject;
+var EdgeDirectionIndicatorObject;
 
-EdgeObject = function(options) {
+EdgeObject = function (options) {
     BaseViewGroup.call(this, options);
 };
 EdgeObject.prototype = Object.create(BaseViewGroup.prototype);
@@ -23,7 +23,7 @@ _.extend(EdgeObject.prototype, {
      * @param endVertexObject {views.objects.VertexObject} end vertex
      * @param edgeType ('incoming' or 'outgoing')
      */
-    initialize: function(options) {
+    initialize: function (options) {
         var self = this;
 
         self.edgeData = options.model;
@@ -33,25 +33,18 @@ _.extend(EdgeObject.prototype, {
         self._onAllEndpointsInitialized();
     },
 
-    _onAllEndpointsInitialized: function() {
-        var endpoints = [],
-            segmentPoints = [],
-            vectorEdge,
-            edgeLineObj,
-            labelObjStyle,
-            labelObj,
-            labelText,
-            textAnchorPoint;
-
+    _onAllEndpointsInitialized: function () {
         // assume edges always move right to left
+        var endpoints = [];
         endpoints.push(this.endpointObjects[0].getConnectionPoint('right'));
         endpoints.push(this.endpointObjects[1].getConnectionPoint('left'));
 
         // break edge into 3 segments
-        vectorEdge = {
+        var vectorEdge = {
             x: endpoints[1].x - endpoints[0].x,
             y: endpoints[1].y - endpoints[0].y
         };
+        var segmentPoints = [];
         segmentPoints.push(endpoints[0]);
         segmentPoints.push({
             x: endpoints[0].x + vectorEdge.x * 1 / 3,
@@ -63,27 +56,28 @@ _.extend(EdgeObject.prototype, {
         });
         segmentPoints.push(endpoints[1]);
 
-        edgeLineObj = this.svg.polyline(_.map(segmentPoints, function(p) {
+        var edgeLineObj = this.svg.polyline(_.map(segmentPoints, function (p) {
             return [p.x, p.y];
         })).style(SvgStyles.getStyles('edgeLine'));
         this.group.add(edgeLineObj);
 
-        labelText = this.edgeData.get('label');
+        var labelText = this.edgeData.get('label');
         if (!_.isNull(this.edgeData.get('multiplicity'))) {
             labelText = labelText + ' (' + this.edgeData.get('multiplicity') + ')';
         }
 
         // draw the label adjacent to the first segment
-        labelObjStyle = SvgStyles.getStyles('edgeText');
-        labelObj = this.svg.text(labelText)
+        var labelObjStyle = SvgStyles.getStyles('edgeText');
+        var labelObj = this.svg.text(labelText)
             .font({
                 family: labelObjStyle.fontFamily,
                 size: labelObjStyle.fontSize,
                 fill: labelObjStyle.fontFill,
-                style: labelObjStyle.fontStyle,
+                style: labelObjStyle.fontStyle
             });
 
-        if (this.edgeType == 'incoming') {
+        var textAnchorPoint;
+        if (this.edgeType === 'incoming') {
             textAnchorPoint = segmentPoints[0];
         }
         else {
@@ -96,7 +90,7 @@ _.extend(EdgeObject.prototype, {
     }
 });
 
-EdgeDirectionIndicatorObject = function(options) {
+EdgeDirectionIndicatorObject = function (options) {
     BaseViewGroup.call(this, options);
 };
 EdgeDirectionIndicatorObject.prototype = Object.create(BaseViewGroup.prototype);
@@ -104,11 +98,11 @@ EdgeDirectionIndicatorObject.prototype.constructor = EdgeDirectionIndicatorObjec
 
 _.extend(EdgeDirectionIndicatorObject.prototype, {
 
-    initialize: function(options) {
+    initialize: function (options) {
         var self = this;
 
         // TODO Try moving the SVG name into the styles
-        this.addImage('arrow.svg', function(arrowObj) {
+        this.addImage('arrow.svg', function (arrowObj) {
             arrowObj.dmove(
                 -0.5 * (arrowObj.width() + 1),
                 -0.5 * (arrowObj.height() + 1)
@@ -122,5 +116,5 @@ _.extend(EdgeDirectionIndicatorObject.prototype, {
 
 module.exports = {
     EdgeObject: EdgeObject,
-    EdgeDirectionIndicatorObject : EdgeDirectionIndicatorObject
+    EdgeDirectionIndicatorObject: EdgeDirectionIndicatorObject
 };

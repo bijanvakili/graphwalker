@@ -1,21 +1,21 @@
 'use strict';
 
-var parseArgs = require('minimist'),
-    browserify = require('browserify'),
-    exorcist   = require('exorcist'),
-    watchify = require('watchify'),
-    aliasify = require('aliasify'),
-    remapify = require('remapify'),
-    stringify = require('stringify'),
-    path = require('path'),
-    fs = require('fs'),
-    buildPath,
+var parseArgs  = require('minimist');
+var browserify = require('browserify');
+var exorcist   = require('exorcist');
+var watchify   = require('watchify');
+var aliasify   = require('aliasify');
+var remapify   = require('remapify');
+var stringify  = require('stringify');
+var path       = require('path');
+var fs         = require('fs');
+
+var buildPath,
     bundlePath,
     args,
-    isDebug,
-    b;
+    isDebug;
 
-function onError(err) {
+function onError (err) {
     if (err.stack) {
         console.error(err.stack);
     }
@@ -26,24 +26,24 @@ function onError(err) {
 }
 
 
-function makeBowerPath(library_name, optional_subfolder) {
-    var path = "./bower_components/" + library_name + "/";
+function makeBowerPath (library_name, optional_subfolder) {
+    var path = './bower_components/' + library_name + '/';
 
-    if (optional_subfolder != undefined) {
-        path = path + optional_subfolder + "/";
+    if (optional_subfolder !== undefined) {
+        path = path + optional_subfolder + '/';
     }
 
     // TODO add argument to use minified version
-    return path + library_name + ".js";
+    return path + library_name + '.js';
 }
 
-function createBundle(outfile, browserifyObj, isDebug) {
+function createBundle (outfile, browserifyObj, isDebug) {
     var b,
         mapFilename,
         _rebundle;
 
     mapFilename = outfile + '.map';
-    _rebundle = function() {
+    _rebundle = function () {
         var rebundler,
             outstream;
 
@@ -62,7 +62,7 @@ function createBundle(outfile, browserifyObj, isDebug) {
 
     if (isDebug) {
         b = watchify(browserifyObj)
-            .on('update', function() {
+            .on('update', function () {
                 _rebundle();
             });
     }
@@ -88,13 +88,13 @@ bundlePath = path.join(buildPath, 'bundle-globals.js');
 createBundle(
     bundlePath,
     browserify(['./app/globals.js'], {
-        debug: isDebug,
+        debug: isDebug
     }).transform(aliasify, {
         aliases: {
             'underscore': makeBowerPath('underscore'),
             'jquery': makeBowerPath('jquery', 'dist'),
             'backbone': makeBowerPath('backbone'),
-            'svg': makeBowerPath('svg', 'dist'),
+            'svg': makeBowerPath('svg', 'dist')
         },
         verbose: false
     })
@@ -106,24 +106,24 @@ createBundle(
     browserify([], {
         debug: isDebug,
         cache: {},
-        packageCache: {},
+        packageCache: {}
     }).transform(
         stringify({
             extentions: ['.tpl'],
-            minify: false, // TODO change this once we add minification
+            minify: false // TODO change this once we add minification
         }), {
-            global: true,
+            global: true
         }
     ).plugin(remapify, [
         {
-            src: "./app/**/*.js",
-            filter: function(alias, dirname, basename) {
+            src: './app/**/*.js',
+            filter: function (alias, dirname, basename) {
                 return path.join(__dirname, dirname, basename);
             }
         },
         {
-            src: "./app/**/*.tpl",
-            filter: function(alias, dirname, basename) {
+            src: './app/**/*.tpl',
+            filter: function (alias, dirname, basename) {
                 return path.join(__dirname, dirname, basename);
             }
         }

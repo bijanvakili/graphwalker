@@ -2,7 +2,7 @@
 
 var BaseViewGroup;
 
-BaseViewGroup = function(options) {
+BaseViewGroup = function (options) {
 
     var self = this;
 
@@ -16,7 +16,8 @@ BaseViewGroup = function(options) {
         });
     }
 
-    this.initialize.apply(this, [options]);
+    // self.initialize.apply(self, [options]);
+    self.initialize(options);
 };
 
 _.extend(BaseViewGroup.prototype, {
@@ -30,10 +31,9 @@ _.extend(BaseViewGroup.prototype, {
     },
 
     addImage: function (filename, onLoaded) {
-        var newImage,
-            self = this;
+        var self = this;
 
-        newImage = self.svg.image('images/' + filename);
+        var newImage = self.svg.image('images/' + filename);
         newImage.loaded(function (loader) {
             newImage.size(loader.width, loader.height);
             self.group.add(newImage);

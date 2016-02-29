@@ -1,7 +1,7 @@
 'use strict';
 
 var Settings = Backbone.Model.extend({
-    urlRoot: 'data/config.json',
+    urlRoot: 'data/config.json'
 });
 
 module.exports = Settings;

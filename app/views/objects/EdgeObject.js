@@ -15,25 +15,13 @@ _.extend(EdgeObject.prototype, {
     edgeType: null,
     endpointObjects: [],
 
-    /*
-     * constructor
-     * @param options {} fabric Object options
-     * @param model {models.GraphData.Edge} graph edge data
-     * @param startVertexObject {views.objects.VertexObject} starting vertex
-     * @param endVertexObject {views.objects.VertexObject} end vertex
-     * @param edgeType ('incoming' or 'outgoing')
-     */
-    initialize: function (options) {
+    initialize: function () {
         var self = this;
 
-        self.edgeData = options.model;
-        self.edgeType = options.edgeType;
-        self.endpointObjects = [options.startVertexObject, options.endVertexObject];
+        self.edgeData = self.options.model;
+        self.edgeType = self.options.edgeType;
+        self.endpointObjects = [self.options.startVertexObject, self.options.endVertexObject];
 
-        self._onAllEndpointsInitialized();
-    },
-
-    _onAllEndpointsInitialized: function () {
         // assume edges always move right to left
         var endpoints = [];
         endpoints.push(this.endpointObjects[0].getConnectionPoint('right'));
@@ -86,7 +74,7 @@ _.extend(EdgeObject.prototype, {
         labelObj.move(textAnchorPoint.x, textAnchorPoint.y);
         this.group.add(labelObj);
 
-        this.group.fire('initialized', this);
+        return P.resolve(self);
     }
 });
 
@@ -98,18 +86,19 @@ EdgeDirectionIndicatorObject.prototype.constructor = EdgeDirectionIndicatorObjec
 
 _.extend(EdgeDirectionIndicatorObject.prototype, {
 
-    initialize: function (options) {
+    initialize: function () {
         var self = this;
 
         // TODO Try moving the SVG name into the styles
-        this.addImage('arrow.svg', function (arrowObj) {
-            arrowObj.dmove(
-                -0.5 * (arrowObj.width() + 1),
-                -0.5 * (arrowObj.height() + 1)
-            );
-            self.group.transform(_.pick(self.options, ['x', 'y']));
-            self.group.fire('initialized', this);
-        });
+        return this.addImage('arrow.svg')
+            .then(function (arrowObj) {
+                arrowObj.dmove(
+                    -0.5 * (arrowObj.width() + 1),
+                    -0.5 * (arrowObj.height() + 1)
+                );
+                self.group.transform(_.pick(self.options, ['x', 'y']));
+                return self;
+            });
     }
 });
 

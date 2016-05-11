@@ -13,30 +13,28 @@ init = function (body) {
     SvgStyles.addStyles(styles);
 
     settings = new Settings();
-    settings.fetch({
-        error: function (model, response, options) {
+    return P.resolve(settings.fetch())
+        .catch(function () {
             alert('Unable to load settings');
-        },
-        success: function (model, response, options) {
+        })
+        .then(function (model, response, options) {
             graph = new Graph({
                 graphDataFile: settings.get('graphDataFile'),
                 useParser: settings.get('useParser')
             });
-            graph.fetch({
-                error: function (model, response, options) {
+            return P.resolve(graph.fetch())
+                .catch(function () {
                     alert('Unable to load graph');
-                },
-                success: function (model, response, options) {
-                    window.router = new Navigator({
-                        settings: settings,
-                        graph: graph
-                    });
-
-                    Backbone.history.start();
-                }
+                });
+        })
+        .then(function (model, response, options) {
+            window.router = new Navigator({
+                settings: settings,
+                graph: graph
             });
-        }
-    });
+
+            return Backbone.history.start();
+        });
 };
 
 window.init = init;

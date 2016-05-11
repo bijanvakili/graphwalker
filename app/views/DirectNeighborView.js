@@ -71,114 +71,118 @@ DirectNeighborView = Backbone.View.extend({
         var targetNodeObject;
         var incomingNodeObjects;
         var outgoingNodeObjects;
-
-        var anyVertexObjectInitialized = _.after(incoming.length + outgoing.length + 1, function () {
-            var edgeOptions,
-                yArcEnd;
-
-            // resize SVG based on the number of nodes
-            svg.height(
-                _.max([
-                    window.innerHeight,
-                    canvasMargin.top + _.max([incoming.length, outgoing.length]) * self.getNodeHeight()
-                ])
-            );
-
-            yArcEnd = targetNodeObject.getConnectionPoint('left').y +
-                SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;
-
-            // draw all edges
-            edgeOptions = {
-                svg: svg
-            };
-            var xLeftmost;
-            var xMid;
-            if (incoming.length > 0) {
-                for (i = 0; i < incoming.length; ++i) {
-                    new EdgeObject(_.extend({}, edgeOptions, { // eslint-disable-line no-new
-                        model: incoming[i].edge,
-                        edgeType: 'incoming',
-                        startVertexObject: incomingNodeObjects[i],
-                        endVertexObject: targetNodeObject
-                    }));
-                }
-
-                xLeftmost = incomingNodeObjects[0].getConnectionPoint('right').x;
-                xMid = xLeftmost + (
-                    targetNodeObject.getConnectionPoint('left').x -
-                    xLeftmost
-                ) * 5 / 6;
-                self.drawRightArrow(svg, xMid, yArcEnd);
-            }
-            if (outgoing.length > 0) {
-                for (var i = 0; i < outgoing.length; ++i) {
-                    new EdgeObject(_.extend({}, edgeOptions, {  // eslint-disable-line no-new
-                        model: outgoing[i].edge,
-                        edgeType: 'outgoing',
-                        startVertexObject: targetNodeObject,
-                        endVertexObject: outgoingNodeObjects[i]
-                    }));
-                }
-
-                xLeftmost = targetNodeObject.getConnectionPoint('right').x;
-                xMid = xLeftmost + (outgoingNodeObjects[0].getConnectionPoint('left').x - xLeftmost) / 6;
-                self.drawRightArrow(svg, xMid, yArcEnd);
-            }
-        });
+        var yArcEnd;
 
         // draw central target node
-        this.createModelNode(svg, xTargetNode, canvasMargin.top, model, function (vertexObject) {
-            targetNodeObject = vertexObject;
-            anyVertexObjectInitialized();
-        });
+        var view = this;
+        return this.createModelNode(svg, xTargetNode, canvasMargin.top, model)
+            .then(function (vertexObject) {
+                targetNodeObject = vertexObject;
 
-        // draw incoming neighbours
-        if (!_.isEmpty(incoming)) {
-            incomingNodeObjects = [];
-            this.createStackFromNodeList(
-                svg,
-                canvasMargin.left,
-                canvasMargin.top,
-                incoming,
-                function (vertexObject) {
-                    incomingNodeObjects.push(vertexObject);
-                    anyVertexObjectInitialized();
+                // draw incoming neighbours
+                return view.createStackFromNodeList(
+                    svg,
+                    canvasMargin.left,
+                    canvasMargin.top,
+                    incoming
+                );
+            })
+            .then(function (_incomingNodeObjects) {
+                var xOutgoing = 0;
+
+                incomingNodeObjects = _incomingNodeObjects;
+
+                // draw outgoing neighbours
+                if (!_.isEmpty(outgoing)) {
+                    var maxOutgoingTextWidth = _.max(
+                        _.map(outgoing, function (neighbor) {
+                            return view.getTextDimensions(neighbor.vertex.get('modelName')).width;
+                        })
+                    );
+
+                    xOutgoing = svg.width() - canvasMargin.right - maxOutgoingTextWidth -
+                        (textMargin * 2) - (rectBorderWidth * 2);
                 }
-            );
-        }
 
-        // draw outgoing neighbours
-        if (!_.isEmpty(outgoing)) {
-            var view = this;
+                return view.createStackFromNodeList(
+                    svg,
+                    xOutgoing,
+                    canvasMargin.top,
+                    outgoing
+                );
+            })
+            .then(function (_outgoingNodeObjects) {
+                outgoingNodeObjects = _outgoingNodeObjects;
+                var edgeOptions;
 
-            var maxOutgoingTextWidth = _.max(
-                _.map(outgoing, function (neighbor) {
-                    return view.getTextDimensions(neighbor.vertex.get('modelName')).width;
-                })
-            );
+                // resize SVG based on the number of nodes
+                svg.height(
+                    _.max([
+                        window.innerHeight,
+                        canvasMargin.top + _.max([incoming.length, outgoing.length]) * self.getNodeHeight()
+                    ])
+                );
 
-            var xOutgoing = svg.width() - canvasMargin.right - maxOutgoingTextWidth -
-                (textMargin * 2) - (rectBorderWidth * 2);
-            outgoingNodeObjects = [];
-            this.createStackFromNodeList(
-                svg,
-                xOutgoing,
-                canvasMargin.top,
-                outgoing,
-                function (vertexObject) {
-                    outgoingNodeObjects.push(vertexObject);
-                    anyVertexObjectInitialized();
+                yArcEnd = targetNodeObject.getConnectionPoint('left').y +
+                    SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;
+
+                // draw all edges
+                edgeOptions = {
+                    svg: svg
+                };
+                return P.join(
+                    P.map(incoming, function (item, i) {
+                        var edgeObject = new EdgeObject(_.extend({}, edgeOptions, { // eslint-disable-line no-new
+                            model: incoming[i].edge,
+                            edgeType: 'incoming',
+                            startVertexObject: incomingNodeObjects[i],
+                            endVertexObject: targetNodeObject
+                        }));
+                        return edgeObject.initialize();
+                    }),
+                    P.map(outgoing, function (item, i) {
+                        var edgeObject = new EdgeObject(_.extend({}, edgeOptions, {  // eslint-disable-line no-new
+                            model: outgoing[i].edge,
+                            edgeType: 'outgoing',
+                            startVertexObject: targetNodeObject,
+                            endVertexObject: outgoingNodeObjects[i]
+                        }));
+                        return edgeObject.initialize();
+                    })
+                );
+            })
+            .then(function () {
+                var indicatorPromises = [];
+                var xLeftmost;
+                var xMid;
+
+                if (incoming.length > 0) {
+                    xLeftmost = incomingNodeObjects[0].getConnectionPoint('right').x;
+                    xMid = xLeftmost + (
+                            targetNodeObject.getConnectionPoint('left').x -
+                            xLeftmost
+                        ) * 5 / 6;
+                    indicatorPromises.push(
+                        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
+                            svg: svg,
+                            x: xMid,
+                            y: yArcEnd
+                        }).initialize()
+                    );
                 }
-            );
-        }
-    },
-
-    drawRightArrow: function (svg, x, y) {
-        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
-            svg: svg,
-            x: x,
-            y: y
-        });
+                if (outgoing.length > 0) {
+                    xLeftmost = targetNodeObject.getConnectionPoint('right').x;
+                    xMid = xLeftmost + (outgoingNodeObjects[0].getConnectionPoint('left').x - xLeftmost) / 6;
+                    indicatorPromises.push(
+                        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
+                            svg: svg,
+                            x: xMid,
+                            y: yArcEnd
+                        }).initialize()
+                    );
+                }
+                return P.all(indicatorPromises);
+            });
     },
 
     getTextDimensions: function (s) {
@@ -200,33 +204,48 @@ DirectNeighborView = Backbone.View.extend({
         };
     },
 
-    createModelNode: function (svg, x, y, model, callback) {
+    /**
+     * Creates a model node object
+     *
+     * @param {svg} svg - SVG object ro render into
+     * @param {integer} x - x position
+     * @param {integer} y - y position
+     * @param {Backbone.Model} model
+     * @returns {Promise<BaseViewGroup>}
+     */
+    createModelNode: function (svg, x, y, model) {
         var vertexObject = new VertexObject({
             svg: svg,
             model: model,
             x: x,
-            y: y,
-            onInitialized: function (object) {
-                callback(object);
-            }
+            y: y
         });
         this.listenTo(vertexObject, 'model:selected', this.onModelSelected);
 
-        return vertexObject;
+        return vertexObject.initialize();
     },
 
-    createStackFromNodeList: function (svg, x, y, neighborList, callback) {
+    /**
+     * Creates a stack of model node objects from a neighbor list
+     *
+     * @param {svg} svg - SVG object ro render into
+     * @param {integer} x - x position
+     * @param {integer} y - y position
+     * @param neighborList
+     * @returns {Promise<Array<VertexObject>>}
+     */
+    createStackFromNodeList: function (svg, x, y, neighborList) {
         if (_.isNull(neighborList)) {
-            return [];
+            return P.resolve([]);
         }
 
         var nodeHeight = this.getNodeHeight();
         var self = this;
-        return _.each(neighborList, function (neighbor, index) {
+        return P.map(neighborList, function (neighbor, index) {
             var yNode;
 
             yNode = y + (nodeHeight * index);
-            self.createModelNode(svg, x, yNode, neighbor.vertex, callback);
+            return self.createModelNode(svg, x, yNode, neighbor.vertex);
         });
     },
 

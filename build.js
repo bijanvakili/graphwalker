@@ -91,10 +91,11 @@ createBundle(
         debug: isDebug
     }).transform(aliasify, {
         aliases: {
-            'underscore': makeBowerPath('underscore'),
-            'jquery': makeBowerPath('jquery', 'dist'),
             'backbone': makeBowerPath('backbone'),
-            'svg': makeBowerPath('svg', 'dist')
+            'bluebird': makeBowerPath('bluebird', 'js/browser'),
+            'jquery': makeBowerPath('jquery', 'dist'),
+            'svg': makeBowerPath('svg', 'dist'),
+            'underscore': makeBowerPath('underscore')
         },
         verbose: false
     })

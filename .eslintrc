@@ -5,6 +5,7 @@
         "alert": true,
         "$": true,
         "Backbone": true,
+        "P": true,
         "SVG": true,
         "SvgStyles": true
     },

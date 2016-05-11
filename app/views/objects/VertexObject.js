@@ -15,19 +15,20 @@ _.extend(VertexObject.prototype, Backbone.Events, {
     iconObj: null,
     labelObj: null,
 
-    /*
-     * constructor
-     * @event initialized: fabric event to indicate that the object is ready to be added to the canvas
+    /**
+     * @returns {Promise}
      */
-    initialize: function (options) {
+    initialize: function () {
         var self = this;
 
-        self.vertexData = options.model;
+        self.vertexData = self.options.model;
         // TODO Try moving the SVG name into the styles
-        self.addImage('basic_node.svg', function (iconObj) {
-            self.iconObj = iconObj;
-            self._initializeComponents();
-        });
+        return self.addImage('basic_node.svg')
+            .then(function (iconObj) {
+                self.iconObj = iconObj;
+                self._initializeComponents();
+                return self;
+            });
     },
 
     /*
@@ -84,7 +85,6 @@ _.extend(VertexObject.prototype, Backbone.Events, {
 
         self.group.add(this.labelObj);
         self.group.transform(_.pick(this.options, ['x', 'y']));
-        self.group.fire('initialized', this);
     },
 
     onClick: function () {

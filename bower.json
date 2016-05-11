@@ -5,6 +5,7 @@
     "jquery": "2.1.4",
     "underscore": "1.8.3",
     "backbone": "1.2.2",
+    "bluebird": "3.3.5",
     "svg": "git@github.com:wout/svg.js#2.2.5"
   }
 }

@@ -4,6 +4,12 @@ var BaseGraphParser,
     DjangoExtensionsGraphParser,
     SequelizeGraphParser;
 
+var _makeKey = function (components) {
+    return _.reduce(components, function (key, component) {
+        return key + (key === '' ? component : '#' + component);
+    }, '');
+};
+
 BaseGraphParser = function (options) {
     this._vertices = options.vertices;
     this._edges = options.edges;
@@ -33,6 +39,7 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
     // contains both forward and reverse versions
     _MULTIPLICITY_MAP: {
         'ForeignKey': '*..1',
+        'FlexibleForeignKey': '*..1', // NOTE: specific to Sentry
         'ManyToManyField': '*..*',
         'OneToOneField': '1..1'
     },
@@ -42,33 +49,32 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
         var vertices = self._vertices;
         var edges = self._edges;
 
+        // fast lookup maps
+        var vertexMap = {};
+        var edgeMap = {};
+
         _.each(response['graphs'], function (graph) {
             _.each(graph['models'], function (model) {
-                vertices.add({
+                var newVertex = vertices.add({
                     internalAppName: model['app_name'],
                     appName: graph['app_name'],
                     modelName: model['name']
                 });
+                // store composite key references for both the app name and internal app name
+                vertexMap[_makeKey([graph['app_name'], model['name']])] = newVertex;
+                vertexMap[_makeKey([model['app_name'], model['name']])] = newVertex;
             });
         });
 
         _.each(response['graphs'], function (graph) {
             _.each(graph['models'], function (model) {
                 _.each(model['relations'], function (relation) {
-                    var sourceVertex,
-                        destVertex;
+                    var sourceVertex = vertexMap[_makeKey([graph['app_name'], model['name']])];
+                    var destVertex = vertexMap[_makeKey([relation['target_app'], relation['target']])];
 
-                    sourceVertex = vertices.findWhere({
-                        appName: graph['app_name'],
-                        modelName: model['name']
-                    });
-                    destVertex = vertices.findWhere({
-                        internalAppName: relation['target_app'],
-                        modelName: relation['target']
-                    });
-
-                    if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
+                    if (sourceVertex && destVertex) {
                         var criteria = null;
+                        var edgeKey = null;
                         var existingEdge = null;
                         var multiplicity = null;
 
@@ -88,11 +94,18 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
                             dest: destVertex,
                             type: relation['type']
                         };
-                        existingEdge = edges.findWhere(criteria);
-                        if (_.isUndefined(existingEdge)) {
+                        edgeKey = _makeKey([
+                            criteria.source.get('appName'),
+                            criteria.source.get('modelName'),
+                            criteria.dest.get('appName'),
+                            criteria.dest.get('modelName'),
+                            criteria.type
+                        ]);
+                        existingEdge = edgeMap[edgeKey];
+                        if (!existingEdge) {
                             criteria.label = relation['name'];
                             criteria.multiplicity = multiplicity;
-                            edges.add(criteria);
+                            edgeMap[edgeKey] = edges.add(criteria);
                         }
                         else {
                             existingEdge.set({
@@ -132,24 +145,26 @@ _.extend(SequelizeGraphParser.prototype, {
         var vertices = self._vertices;
         var edges = self._edges;
 
+        // fast lookup map
+        var vertexMap = {};
+        var edgeMap = {};
+
         // compute all known vertices
         _.each(response, function (model) {
-            vertices.add({
+            var newVertex = vertices.add({
                 modelName: model['name']
             });
+            vertexMap[model['name']] = newVertex;
         });
 
         // construct edges from all relations
         _.each(response, function (model) {
             _.each(model.relations, function (relation) {
-                var sourceVertex = vertices.findWhere({
-                    modelName: model['name']
-                });
-                var destVertex = vertices.findWhere({
-                    modelName: relation['target']
-                });
+                var sourceVertex = vertexMap[model['name']];
+                var destVertex = vertexMap[relation['target']];
+                var edgeKey;
 
-                if (!_.isUndefined(sourceVertex) && !_.isUndefined(destVertex)) {
+                if (sourceVertex && destVertex) {
                     var multiplicity,
                         criteria,
                         existingEdge;
@@ -165,11 +180,12 @@ _.extend(SequelizeGraphParser.prototype, {
                         dest: destVertex,
                         type: relation['type']
                     };
-                    existingEdge = edges.findWhere(criteria);
-                    if (_.isUndefined(existingEdge)) {
+                    edgeKey = _makeKey([sourceVertex.get('modelName'), destVertex.get('modelName'), relation['type']]);
+                    existingEdge = edgeMap[edgeKey];
+                    if (!existingEdge) {
                         criteria.label = relation['field'];
                         criteria.multiplicity = multiplicity;
-                        edges.add(criteria);
+                        edgeMap[edgeKey] = edges.add(criteria);
                     }
                     else {
                         existingEdge.set({

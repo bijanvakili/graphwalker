@@ -26,15 +26,15 @@ function onError (err) {
 }
 
 
-function makeBowerPath (library_name, optional_subfolder) {
-    var path = './bower_components/' + library_name + '/';
+function makeBowerPath (libraryName, optionalSubfolder) {
+    var path = './bower_components/' + libraryName + '/';
 
-    if (optional_subfolder !== undefined) {
-        path = path + optional_subfolder + '/';
+    if (optionalSubfolder !== undefined) {
+        path = path + optionalSubfolder + '/';
     }
 
     // TODO add argument to use minified version
-    return path + library_name + '.js';
+    return path + libraryName + '.js';
 }
 
 function createBundle (outfile, browserifyObj, isDebug) {
@@ -93,9 +93,11 @@ createBundle(
         aliases: {
             'backbone': makeBowerPath('backbone'),
             'bluebird': makeBowerPath('bluebird', 'js/browser'),
+            'lodash': makeBowerPath('lodash', 'dist'),
             'jquery': makeBowerPath('jquery', 'dist'),
             'svg': makeBowerPath('svg', 'dist'),
-            'underscore': makeBowerPath('underscore')
+            'underscore': 'lodash'
+
         },
         verbose: false
     })

@@ -8,7 +8,7 @@ var _,
     SvgStyles;
 
 $ = require('jquery');
-_ = require('underscore');
+_ = require('lodash');
 P = require('bluebird');
 Backbone = require('backbone');
 Backbone.$ = $;

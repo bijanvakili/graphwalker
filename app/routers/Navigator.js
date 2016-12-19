@@ -1,6 +1,7 @@
 'use strict';
 
 var DirectNeighborView = require('app/views/DirectNeighborView');
+var TextMeasureView = require('app/views/TextMeasureView');
 
 var Navigator = Backbone.Router.extend({
 
@@ -17,6 +18,8 @@ var Navigator = Backbone.Router.extend({
     initialize: function (options) {
         this.settings = options.settings;
         this.graph = options.graph;
+        this.textMeasureView = null;
+        this.graphView = null;
     },
 
     moveToStartVertex: function () {
@@ -37,19 +40,25 @@ var Navigator = Backbone.Router.extend({
     },
 
     onMove: function (appName, modelName) {
-        if (!_.isNull(this.view)) {
-            this.view.remove();
+        if (_.isNull(this.textMeasureView)) {
+            this.textMeasureView = new TextMeasureView();
+            this.textMeasureView.render();
         }
-        this.view = null;
-        this.view = new DirectNeighborView({
-            settings: this.settings,
+
+        if (!_.isNull(this.graphView)) {
+            this.graphView.remove();
+            this.graphView = null;
+        }
+
+        this.graphView = new DirectNeighborView({
             model: this.graph,
             target: {
                 appName: appName,
                 modelName: modelName
-            }
+            },
+            textMeasureView: this.textMeasureView
         });
-        this.view.render($('.walkerContainer')[0]);
+        this.graphView.render($('.walkerContainer')[0]);
     }
 });
 

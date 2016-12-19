@@ -24,6 +24,7 @@ DirectNeighborView = Backbone.View.extend({
 
     initialize: function (options) {
         this.target = options.target;
+        this.textMeasureView = options.textMeasureView;
     },
 
     render: function (parent) {
@@ -58,9 +59,8 @@ DirectNeighborView = Backbone.View.extend({
         }
         this.setElement(svg.node);
 
-        // TODO remove this hack
         var modelName = model.get('modelName');
-        var textMetrics = this.getTextDimensions(modelName);
+        var textMetrics = this.textMeasureView.getTextDimensions(modelName);
         var textMargin = SvgStyles.getStyles('vertexText').textMargin;
 
         var canvasMargin = SvgStyles.getStyles('canvasMargin');
@@ -96,7 +96,9 @@ DirectNeighborView = Backbone.View.extend({
                 if (!_.isEmpty(outgoing)) {
                     var maxOutgoingTextWidth = _.max(
                         _.map(outgoing, function (neighbor) {
-                            return view.getTextDimensions(neighbor.vertex.get('modelName')).width;
+                            return view.textMeasureView.getTextDimensions(
+                                neighbor.vertex.get('modelName')
+                            ).width;
                         })
                     );
 
@@ -183,25 +185,6 @@ DirectNeighborView = Backbone.View.extend({
                 }
                 return P.all(indicatorPromises);
             });
-    },
-
-    getTextDimensions: function (s) {
-        if (_.isUndefined(this.textMeasureContext)) {
-            // TODO textMeasure should move into a separate View
-            var textMeasure = $('#textMeasure');
-            textMeasure.width(window.innerWidth);
-            this.textMeasureContext = textMeasure[0].getContext('2d');
-        }
-
-        var fontSettings = SvgStyles.getStyles('vertexText');
-        var fontDescription = fontSettings.fontSize + 'px ' + fontSettings.fontFamily;
-        this.textMeasureContext.font = fontDescription;
-        var textMetrics = this.textMeasureContext.measureText(s);
-
-        return {
-            width: textMetrics.width,
-            height: fontSettings.textHeight
-        };
     },
 
     /**

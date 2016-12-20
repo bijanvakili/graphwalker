@@ -40,6 +40,7 @@ var Navigator = Backbone.Router.extend({
     },
 
     onMove: function (appName, modelName) {
+        // TODO refactor to move everything in body to a MainView class (reuse this.view)
         if (_.isNull(this.textMeasureView)) {
             this.textMeasureView = new TextMeasureView();
             this.textMeasureView.render();

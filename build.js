@@ -12,6 +12,7 @@ var fs         = require('fs');
 
 var buildPath,
     bundlePath,
+    lodashPath,
     args,
     isDebug;
 
@@ -84,6 +85,7 @@ if (!fs.existsSync(buildPath)) {
     fs.mkdirSync(buildPath);
 }
 
+lodashPath = makeBowerPath('lodash', 'dist');
 bundlePath = path.join(buildPath, 'bundle-globals.js');
 createBundle(
     bundlePath,
@@ -93,11 +95,10 @@ createBundle(
         aliases: {
             'backbone': makeBowerPath('backbone'),
             'bluebird': makeBowerPath('bluebird', 'js/browser'),
-            'lodash': makeBowerPath('lodash', 'dist'),
+            'lodash': lodashPath,
             'jquery': makeBowerPath('jquery', 'dist'),
             'svg': makeBowerPath('svg', 'dist'),
-            'underscore': 'lodash'
-
+            'underscore': lodashPath
         },
         verbose: false
     })

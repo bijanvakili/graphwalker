@@ -1,0 +1,31 @@
+version: '2'
+
+volumes:
+  node_modules:
+  bower_components:
+  build_output:
+
+services:
+  common:
+    build: .
+    volumes:
+        - ".:/usr/src/app"
+        - "node_modules:/usr/src/app/node_modules"
+        - "bower_components:/usr/src/app/bower_components"
+        - "build_output:/usr/src/app/build"
+
+  jsmonitor:
+    extends:
+      service: common
+    command: npm run docker_jsmonitor
+    ports:
+      - "5858:5858"
+
+  web:
+    extends:
+      service: common
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+    command: npm run docker_webserver

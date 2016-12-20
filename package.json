@@ -27,6 +27,8 @@
     "postinstall": "bower install",
     "build": "node build.js",
     "build_monitor": "node build.js --debug",
+    "docker_jsmonitor": "npm install && bower install --allow-root && npm run build_monitor",
+    "docker_webserver": "npm install && npm start",
     "clean": "rm -rf ./build ./bower_components ./node_modules",
     "partial_clean": "rm -rf ./build",
     "todos": "grep -R TODO app/*",

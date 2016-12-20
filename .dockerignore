@@ -1,0 +1,13 @@
+.DS_Store
+.dockerignore
+.git
+.gitignore
+.vagrant
+bower_components/
+build/
+docker-compose.yml
+Dockerfile
+Vagrantfile
+node_modules/
+npm-debug.log
+tmp

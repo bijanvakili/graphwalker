@@ -70,8 +70,10 @@ _.extend(VertexObject.prototype, Backbone.Events, {
             xOffset = iconInfo.width - 1;
         }
         else {
-            // TODO add better error handling
-            alert('unrecognized side');
+            this.onError(
+                'model(' + this.vertexData.get('modelName') + ') got unrecognized side: ' +
+                (side || '(undefined)')
+            );
         }
 
         return {

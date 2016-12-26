@@ -10,14 +10,19 @@
 </head>
 <body onload="init();">
     <!-- on screen elements -->
-    <div class="walkerContainer">
-        <!-- SVG content will be renedered here -->
+    <div class="mainView">
+        <div class="errorContainer">
+            <!-- Error messages will go here -->
+        </div>
+        <div class="walkerContainer">
+            <!-- SVG content will be renedered here -->
+        </div>
     </div>
 
     <!-- offscreen elements -->
     <div class="offscreen">
         <!-- for measuring text -->
-        <canvas id="textMeasure" class="offscreen"></canvas>
+        <canvas class="textMeasure"></canvas>
     </div>
 </body>
 </html>

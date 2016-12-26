@@ -1,39 +1,24 @@
 'use strict';
 
-var Settings = require('app/models/Settings');
-var Graph = require('app/models/GraphData').Graph;
+var MainView = require('app/views/MainView');
 var Navigator = require('app/routers/Navigator');
 var styles = require('app/styles');
 var init;
 
 init = function (body) {
-    var settings,
-        graph;
+    var view;
 
     SvgStyles.addStyles(styles);
 
-    settings = new Settings();
-    return P.resolve(settings.fetch())
-        .catch(function () {
-            alert('Unable to load settings');
-        })
-        .then(function (model, response, options) {
-            graph = new Graph({
-                graphDataFile: settings.get('graphDataFile'),
-                useParser: settings.get('useParser')
-            });
-            return P.resolve(graph.fetch())
-                .catch(function () {
-                    alert('Unable to load graph');
-                });
-        })
-        .then(function (model, response, options) {
-            window.router = new Navigator({
-                settings: settings,
-                graph: graph
-            });
+    view = new MainView();
+    return view.startApplication()
+        .then(function (results) {
+            window.router = new Navigator(results);
 
             return Backbone.history.start();
+        })
+        .catch(function (err) {
+            view.reportError(err.message);
         });
 };
 

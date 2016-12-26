@@ -18,3 +18,11 @@ body {
 .offscreen {
     display: none;
 }
+
+.errorMessage {
+    font-family: arial;
+    font-size: 18px;
+    color: red;
+    margin-left: 4px;
+    margin-top: 4px;
+}

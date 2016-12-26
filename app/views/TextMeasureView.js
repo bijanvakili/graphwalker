@@ -2,9 +2,7 @@
 
 var TextMeasureView = Backbone.View.extend({
 
-    id: 'textMeasure',
-
-    tagName: 'canvas',
+    el: '.textMeasure',
 
     initialize: function () {
         this.fontSettings = SvgStyles.getStyles('vertexText');

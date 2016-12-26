@@ -1,46 +1,50 @@
 'use strict';
 
-var VertexObject = require('app/views/objects/VertexObject');
+var DirectNeighborView;
 var EdgeObjectModule = require('app/views/objects/EdgeObject');
 var EdgeObject;
 var EdgeDirectionIndicatorObject;
-var DirectNeighborView;
+var VertexObject = require('app/views/objects/VertexObject');
 
 EdgeObject = EdgeObjectModule.EdgeObject;
 EdgeDirectionIndicatorObject = EdgeObjectModule.EdgeDirectionIndicatorObject;
 
+
 DirectNeighborView = Backbone.View.extend({
 
-    tagName: 'svg',
+    el: '.walkerContainer',
 
     events: {
         graphLoaded: 'onGraphLoaded'
     },
 
-    reportError: function (message, response) {
-        alert(message);
-        console.log(response.responseText);
-    },
-
     initialize: function (options) {
-        this.target = options.target;
+        this.model = options.model;
+        this.errorView = options.errorView;
+
         this.textMeasureView = options.textMeasureView;
+
+        this.reportError = this.errorView.registerEmitter(this);
     },
 
-    render: function (parent) {
+    render: function (target) {
         var graph,
             targetNode;
 
         graph = this.model;
-        targetNode = graph.findVertex(this.target);
-        // TODO replace this with proper error display
+        targetNode = graph.findVertex(target);
+
         if (_.isUndefined(targetNode)) {
-            alert('Unable to find matching app,model');
+            this.reportError(
+                'Unable to find matching app/model = ' +
+                _.get(target, 'appName', '(undefined)') + '/' +
+                _.get(target, 'modelName', '(undefined)')
+            );
             return;
         }
 
         this.drawLocalModelGraph(
-            parent,
+            this.$el[0],
             targetNode,
             graph.getIncomingNeighbors(targetNode),
             graph.getOutgoingNeighbors(targetNode)
@@ -54,7 +58,7 @@ DirectNeighborView = Backbone.View.extend({
             window.innerHeight
         );
         if (_.isUndefined(svg)) {
-            alert('Error: Unable to create svg!');
+            this.reportError('Unable to create svg!');
             return;
         }
         this.setElement(svg.node);
@@ -130,7 +134,8 @@ DirectNeighborView = Backbone.View.extend({
 
                 // draw all edges
                 edgeOptions = {
-                    svg: svg
+                    svg: svg,
+                    parent: self
                 };
                 return P.join(
                     P.map(incoming, function (item, i) {
@@ -157,7 +162,13 @@ DirectNeighborView = Backbone.View.extend({
                 var indicatorPromises = [];
                 var xLeftmost;
                 var xMid;
+                var edgeOptions;
 
+                edgeOptions = {
+                    svg: svg,
+                    parent: self,
+                    y: yArcEnd
+                };
                 if (incoming.length > 0) {
                     xLeftmost = incomingNodeObjects[0].getConnectionPoint('right').x;
                     xMid = xLeftmost + (
@@ -165,22 +176,18 @@ DirectNeighborView = Backbone.View.extend({
                             xLeftmost
                         ) * 5 / 6;
                     indicatorPromises.push(
-                        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
-                            svg: svg,
-                            x: xMid,
-                            y: yArcEnd
-                        }).initialize()
+                        new EdgeDirectionIndicatorObject(_.extend({}, edgeOptions, { // eslint-disable-line no-new
+                            x: xMid
+                        })).initialize()
                     );
                 }
                 if (outgoing.length > 0) {
                     xLeftmost = targetNodeObject.getConnectionPoint('right').x;
                     xMid = xLeftmost + (outgoingNodeObjects[0].getConnectionPoint('left').x - xLeftmost) / 6;
                     indicatorPromises.push(
-                        new EdgeDirectionIndicatorObject({ // eslint-disable-line no-new
-                            svg: svg,
-                            x: xMid,
-                            y: yArcEnd
-                        }).initialize()
+                        new EdgeDirectionIndicatorObject(_.extend({}, edgeOptions, { // eslint-disable-line no-new
+                            x: xMid
+                        })).initialize()
                     );
                 }
                 return P.all(indicatorPromises);
@@ -199,6 +206,7 @@ DirectNeighborView = Backbone.View.extend({
     createModelNode: function (svg, x, y, model) {
         var vertexObject = new VertexObject({
             svg: svg,
+            parent: this,
             model: model,
             x: x,
             y: y

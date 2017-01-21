@@ -94,6 +94,7 @@ createBundle(
     }).transform(aliasify, {
         aliases: {
             'backbone': makeBowerPath('backbone'),
+            'backbone.typeahead': makeBowerPath('backbone.typeahead'),
             'bluebird': makeBowerPath('bluebird', 'js/browser'),
             'lodash': lodashPath,
             'jquery': makeBowerPath('jquery', 'dist'),

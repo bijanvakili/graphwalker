@@ -1,10 +1,8 @@
 'use strict';
 
-var Navigator = Backbone.Router.extend({
+var EventHandlers = require('app/EventHandlers');
 
-    settings: null,
-    graph: null,
-    view: null,
+var Navigator = Backbone.Router.extend({
 
     routes: {
         ':appName/:model': 'moveToQualifiedVertex',
@@ -16,6 +14,8 @@ var Navigator = Backbone.Router.extend({
         this.settings = options.settings;
         this.graph = options.graph;
         this.view = options.mainView;
+
+        this.listenTo(EventHandlers.navigatorChannel, 'vertex:selected', this.onVertexSelected);
     },
 
     moveToStartVertex: function () {
@@ -37,6 +37,13 @@ var Navigator = Backbone.Router.extend({
 
     onMove: function (appName, modelName) {
         this.view.render(appName, modelName);
+    },
+
+    onVertexSelected: function (vertexModel) {
+        Backbone.history.navigate(
+            vertexModel.get('appName') + '/' + vertexModel.get('modelName'),
+            true
+        );
     }
 });
 

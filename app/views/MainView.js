@@ -5,11 +5,12 @@ var Graph = require('app/models/GraphData').Graph;
 var DirectNeighborView = require('app/views/DirectNeighborView');
 var ErrorView = require('app/views/ErrorView');
 var TextMeasureView = require('app/views/TextMeasureView');
+var TypeAheadView = require('app/views/TypeAheadView');
 
 
 var MainView = Backbone.View.extend({
 
-    el: '.mainView',
+    el: '.main-view',
 
     initialize: function (options) {
         this.errorView = new ErrorView();
@@ -18,6 +19,7 @@ var MainView = Backbone.View.extend({
         this.model = null;
         this.textMeasureView = null;
         this.graphView = null;
+        this.typeAheadView = null;
     },
 
     /**
@@ -61,6 +63,11 @@ var MainView = Backbone.View.extend({
         if (_.isNull(this.textMeasureView)) {
             this.textMeasureView = new TextMeasureView();
             this.textMeasureView.render();
+        }
+
+        if (_.isNull(this.typeAheadView)) {
+            this.typeAheadView = new TypeAheadView({graph: this.model});
+            this.typeAheadView.render();
         }
 
         if (!_.isNull(this.graphView)) {

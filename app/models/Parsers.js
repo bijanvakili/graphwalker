@@ -60,6 +60,10 @@ _.extend(DjangoExtensionsGraphParser.prototype, {
                     appName: graph['app_name'],
                     modelName: model['name']
                 });
+                if (_.isArray(newVertex)) {
+                    newVertex = newVertex[0];
+                }
+
                 // store composite key references for both the app name and internal app name
                 vertexMap[_makeKey([graph['app_name'], model['name']])] = newVertex;
                 vertexMap[_makeKey([model['app_name'], model['name']])] = newVertex;

@@ -19,11 +19,16 @@ Vertex = Backbone.Model.extend({
     isEqual: function (query) {
         return this.get('appName') === query['appName'] &&
             this.get('modelName') === query['modelName'];
+    },
+
+    displayName: function () {
+        return this.get('appName') + '.' + this.get('modelName');
     }
 });
 
-Vertices = Backbone.Collection.extend({
+Vertices = Backbone.TypeaheadCollection.extend({
     model: Vertex,
+    typeaheadAttributes: ['appName', 'modelName'],
 
     findOrCreateVertex: function (query) {
         var vertex;
@@ -130,6 +135,10 @@ Graph = Backbone.Model.extend({
         });
 
         return neighbors;
+    },
+
+    queryTypeahead: function (query) {
+        return this.get('vertices').typeahead(query);
     }
 });
 

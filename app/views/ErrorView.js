@@ -7,9 +7,9 @@ ERROR_EVENT = 'graphwalker:error';
 
 ErrorView = Backbone.View.extend({
 
-    el: '.errorContainer',
+    el: '.error-container',
 
-    template: _.template('<span class="errorMessage"><%= message %></span>'),
+    template: _.template('<span class="error-message"><%= message %></span>'),
 
     render: function (message) {
         var errorContent = '';

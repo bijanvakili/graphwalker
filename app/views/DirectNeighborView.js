@@ -1,6 +1,7 @@
 'use strict';
 
 var DirectNeighborView;
+var EventHandlers = require('app/EventHandlers');
 var EdgeObjectModule = require('app/views/objects/EdgeObject');
 var EdgeObject;
 var EdgeDirectionIndicatorObject;
@@ -12,7 +13,7 @@ EdgeDirectionIndicatorObject = EdgeObjectModule.EdgeDirectionIndicatorObject;
 
 DirectNeighborView = Backbone.View.extend({
 
-    el: '.walkerContainer',
+    el: '.walker-container',
 
     events: {
         graphLoaded: 'onGraphLoaded'
@@ -249,10 +250,7 @@ DirectNeighborView = Backbone.View.extend({
     },
 
     onModelSelected: function (vertexModel) {
-        Backbone.history.navigate(
-            vertexModel.get('appName') + '/' + vertexModel.get('modelName'),
-            true
-        );
+        EventHandlers.navigatorChannel.trigger('vertex:selected', vertexModel);
     }
 });
 

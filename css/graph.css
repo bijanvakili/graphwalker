@@ -6,23 +6,74 @@ html {
 body {
     width: 100%;
     height: 100%;
-    margin: 0px;
+    margin: 0;
+    font-family: Arial, sans-serif;
 }
 
-.walkerContainer {
+.hud-view {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+}
+
+.main-view {
+    position: absolute;
+    z-index: 0;
+    top: 20px;
+    left: 0;
+}
+
+.walker-container {
     width: 100%;
     height: 100%;
-    margin: 0px;
+    margin: 0;
 }
 
 .offscreen {
     display: none;
 }
 
-.errorMessage {
-    font-family: arial;
-    font-size: 18px;
+.error-message {
+    font-size: 1.5em;
     color: red;
-    margin-left: 4px;
-    margin-top: 4px;
+    left: 4px;
+    top: 4px;
+    position: relative;
+    z-index: 100;
+}
+
+.typeahead-container {
+    top: 10px;
+    left: 4px;
+    position: relative;
+    width: 90vw;
+}
+
+.typeahead-textentry {
+    width: 50%;
+}
+
+.typeahead-results-container {
+    opacity: 0.9;
+    font-size: medium;
+    background-color: #4c81c9;
+    color: #ffffff;
+
+    /* defaults for inactive */
+    border: none;
+    width: 0;
+}
+
+.typeahead-results-container.active {
+    border: 1px solid black;
+    width: 75%;
+}
+
+.typeahead-results-item {
+    width: 100%;
+}
+
+.typeahead-results-item.active {
+    background-color: #4AA02C;
 }

@@ -23,14 +23,18 @@ Available JSON parsers are:
 
 ## Running with Docker
 
-Start the Javascript build monitor:
+It is recommended to start the Javascript build monitor in the _foreground_ in a separate console session:
+
+    docker-compose up jsmonitor
+
+This will allow you to see log output if there is a build error.  However, if you wish to run it in the background
+and have no output:
 
     docker-compose up -d jsmonitor
 
 Start the static web server:
 
     docker-compose up -d web
-
 
 Open the following URL in your web browser: [http://localhost:8080/traverse.html](http://localhost:8080/traverse.html)
 

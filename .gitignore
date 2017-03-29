@@ -1,8 +1,8 @@
 tmp/*
 node_modules/*
-bower_components/*
 build/*
 npm-debug.log
 .vagrant/
 .idea/
 .DS_Store
+.nvmrc

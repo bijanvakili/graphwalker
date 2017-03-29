@@ -4,13 +4,13 @@
 (function (root, factory) {
 
     if (typeof define === 'function' && define.amd) {
-        define(['underscore', 'svg', 'exports'], function (_, SVG, exports) {
+        define(['underscore', 'svg.js', 'exports'], function (_, SVG, exports) {
             root.SvgStyles = factory(root, exports, _, SVG);
         });
     }
     else if (typeof exports !== 'undefined') {
         var _ = require('underscore');
-        var SVG = require('svg');
+        var SVG = require('svg.js');
 
         module.exports = factory(root, exports, _, SVG);
     }

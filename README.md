@@ -24,20 +24,16 @@ Available JSON parsers are:
 
 ## Running with Docker
 
-It is recommended to start the Javascript build monitor in the _foreground_ in a separate console session:
+It is recommended to start the development web server in the _foreground_ in a separate console session:
 
-    docker-compose up jsmonitor
+    docker-compose up web
 
 This will allow you to see log output if there is a build error.  However, if you wish to run it in the background
 and have no output:
 
-    docker-compose up -d jsmonitor
-
-Start the static web server:
-
     docker-compose up -d web
 
-Open the following URL in your web browser: [http://localhost:8080/traverse.html](http://localhost:8080/traverse.html)
+Open the following URL in your web browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
 ## Running locally
 
@@ -64,7 +60,7 @@ Run the following:
 
 (NOTE: This will implicitly run a build)
 
-Open the following URL in your web browser: [http://localhost:8080/traverse.html](http://localhost:8080/traverse.html)
+Open the following URL in your web browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
 #### Cleanup
 

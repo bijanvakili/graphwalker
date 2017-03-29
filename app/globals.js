@@ -17,7 +17,7 @@ _.all = _.every;
 P = require('bluebird');
 Backbone = require('backbone');
 Backbone.$ = $;
-SVG = require('svg');
+SVG = require('svg.js');
 SvgStyles = require('./lib/svg.styles');
 
 window.$ = $;

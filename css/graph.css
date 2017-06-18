@@ -20,7 +20,7 @@ body {
 .main-view {
     position: absolute;
     z-index: 0;
-    top: 20px;
+    top: 40px;
     left: 0;
 }
 
@@ -28,6 +28,24 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
+}
+
+.walker-image-container {
+    position: relative;
+    top: 20px;
+}
+
+.column-scroll-container {
+    position: absolute;
+    top: 0;
+}
+
+.column-scroll-container.incoming {
+    left: 10px;
+}
+
+.column-scroll-container.outgoing {
+    right: 10px;
 }
 
 .offscreen {

@@ -2,7 +2,7 @@
 
 var Settings = require('app/models/Settings');
 var Graph = require('app/models/GraphData').Graph;
-var DirectNeighborView = require('app/views/DirectNeighborView');
+var LocalizedGraphView = require('app/views/DirectNeighborView');
 var ErrorView = require('app/views/ErrorView');
 var TextMeasureView = require('app/views/TextMeasureView');
 var TypeAheadView = require('app/views/TypeAheadView');
@@ -70,16 +70,17 @@ var MainView = Backbone.View.extend({
             this.typeAheadView.render();
         }
 
-        if (!_.isNull(this.graphView)) {
-            this.graphView.remove();
-            this.graphView = null;
+        if (_.isNull(this.graphView)) {
+            this.graphView = new LocalizedGraphView({
+                model: this.model,
+                errorView: this.errorView,
+                textMeasureView: this.textMeasureView
+            });
+        }
+        else {
+            this.graphView.clearContents();
         }
 
-        this.graphView = new DirectNeighborView({
-            model: this.model,
-            errorView: this.errorView,
-            textMeasureView: this.textMeasureView
-        });
         this.graphView.render({
             appName: appName,
             modelName: modelName

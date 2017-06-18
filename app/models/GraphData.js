@@ -110,7 +110,16 @@ Graph = Backbone.Model.extend({
         return this.getNeighbors(vertex, true);
     },
 
-    getNeighbors: function (vertex, isIncoming) {
+    /**
+     * Returns an array of vertex neighbor information
+     *
+     * @param {Vertex} targetVertex - vertex model instance to inspect
+     * @param {boolean} isIncoming - true for incoming neighbors, false for outgoing neighbors
+     * @returns {Array} neighbor details where each item is
+     *  vertex - Vertex model instance representing the neighbor vertex
+     *  edge - Edge model instance representing the arc from 'targetVertex' to the neighbor vertex
+     */
+    getNeighbors: function (targetVertex, isIncoming) {
         var neighbors = [];
 
         _.each(this.get('edges').models, function (edge) {
@@ -126,7 +135,7 @@ Graph = Backbone.Model.extend({
                 attrCollect = 'dest';
             }
 
-            if (edge.get(attrMatch).isEqual(vertex.attributes)) {
+            if (edge.get(attrMatch).isEqual(targetVertex.attributes)) {
                 neighbors.push({
                     'vertex': edge.get(attrCollect),
                     'edge': edge

@@ -62,7 +62,10 @@ _.extend(VertexObject.prototype, Backbone.Events, {
             xOffset;
 
         iconInfo = _.extend({}, this.iconObj.attr());
-        vertexAbsPosition = _.pick(this.options, ['x', 'y']);
+        vertexAbsPosition = {
+            x: this.x(),
+            y: this.y()
+        };
         if (side === 'left') {
             xOffset = 0;
         }

@@ -13,8 +13,6 @@ var NodeColumnScrollerView,
     LocalizedGraphView,
     NodeColumnView;
 
-var DEFAULT_VISIBLE_NODES_IN_COLUMN = 5;
-
 
 var getNodeHeight = function () {
     var rectStyle = SvgStyles.getStyles('vertexRect');
@@ -113,7 +111,7 @@ NodeColumnView = Backbone.View.extend({
         self.collection = options.collection;
         self.edgeType = options.edgeType;
         self.targetVertexObject = options.targetVertexObject;
-        self.pagesize = options.maxVisibleNodes || DEFAULT_VISIBLE_NODES_IN_COLUMN;
+        self.pagesize = options.maxVisibleNodes;
 
         self.scrollerView = options.scrollerView;
         if (self.scrollerView) {
@@ -265,6 +263,7 @@ LocalizedGraphView = Backbone.View.extend({
 
         this.errorView = options.errorView;
         this.textMeasureView = options.textMeasureView;
+        this.vertexColumnPageSize = options.vertexColumnPageSize;
 
         this.reportError = this.errorView.registerEmitter(this);
 
@@ -338,9 +337,9 @@ LocalizedGraphView = Backbone.View.extend({
         var outgoingNeighbors = graph.getOutgoingNeighbors(targetNode);
 
         // scroller views
-        var commonScrollerViewOptions = {pageSize: DEFAULT_VISIBLE_NODES_IN_COLUMN};
+        var commonScrollerViewOptions = {pageSize: self.vertexColumnPageSize};
         var scrollViewElement = self.$('.column-scroll-container.incoming');
-        if (incomingNeighbors.length > DEFAULT_VISIBLE_NODES_IN_COLUMN) {
+        if (incomingNeighbors.length > self.vertexColumnPageSize) {
             self.incomingScrollerView = new NodeColumnScrollerView(_.extend({}, commonScrollerViewOptions, {
                 maxSize: incomingNeighbors.length,
                 el: scrollViewElement
@@ -353,7 +352,7 @@ LocalizedGraphView = Backbone.View.extend({
         }
 
         scrollViewElement = self.$('.column-scroll-container.outgoing');
-        if (outgoingNeighbors.length > DEFAULT_VISIBLE_NODES_IN_COLUMN) {
+        if (outgoingNeighbors.length > self.vertexColumnPageSize) {
             self.outgoingScrollerView = new NodeColumnScrollerView(_.extend({}, commonScrollerViewOptions, {
                 maxSize: outgoingNeighbors.length,
                 el: scrollViewElement
@@ -384,7 +383,7 @@ LocalizedGraphView = Backbone.View.extend({
             self.incomingNodesView = new NodeColumnView({
                 left: canvasMargin.left,
                 top: canvasMargin.top,
-                maxVisibleNodes: DEFAULT_VISIBLE_NODES_IN_COLUMN,
+                maxVisibleNodes: self.vertexColumnPageSize,
                 collection: incomingNeighbors,
                 svg: self.svg,
                 targetVertexObject: self.targetVertexObject,
@@ -413,7 +412,7 @@ LocalizedGraphView = Backbone.View.extend({
             self.outgoingNodesView = new NodeColumnView({
                 left: outgoingPos.left,
                 top: outgoingPos.top,
-                maxVisibleNodes: DEFAULT_VISIBLE_NODES_IN_COLUMN,
+                maxVisibleNodes: self.vertexColumnPageSize,
                 collection: outgoingNeighbors,
                 svg: self.svg,
                 targetVertexObject: self.targetVertexObject,

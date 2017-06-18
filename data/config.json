@@ -4,5 +4,6 @@
   "start": {
     "app": "sentry",
     "model": "Team"
-  }
+  },
+  "vertexColumnPageSize": 8
 }

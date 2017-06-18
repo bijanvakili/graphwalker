@@ -34,6 +34,7 @@ var MainView = Backbone.View.extend({
 
         self = this;
         settings = new Settings();
+        self.settings = settings;
 
         return P.resolve(settings.fetch())
             .catch(function (err) {
@@ -74,7 +75,8 @@ var MainView = Backbone.View.extend({
             this.graphView = new LocalizedGraphView({
                 model: this.model,
                 errorView: this.errorView,
-                textMeasureView: this.textMeasureView
+                textMeasureView: this.textMeasureView,
+                vertexColumnPageSize: this.settings.get('vertexColumnPageSize')
             });
         }
         else {

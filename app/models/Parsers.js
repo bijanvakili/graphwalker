@@ -2,7 +2,8 @@
 
 var BaseGraphParser,
     DjangoExtensionsGraphParser,
-    SequelizeGraphParser;
+    SequelizeGraphParser,
+    SqlAlchemyGraphParser;
 
 var _makeKey = function (components) {
     return _.reduce(components, function (key, component) {
@@ -158,6 +159,10 @@ _.extend(SequelizeGraphParser.prototype, {
             var newVertex = vertices.add({
                 modelName: model['name']
             });
+            if (_.isArray(newVertex)) {
+                newVertex = newVertex[0];
+            }
+
             vertexMap[model['name']] = newVertex;
         });
 
@@ -208,7 +213,98 @@ _.extend(SequelizeGraphParser.prototype, {
 });
 
 
+SqlAlchemyGraphParser = function (options) {
+    BaseGraphParser.call(this, options);
+};
+SqlAlchemyGraphParser.prototype = Object.create(BaseGraphParser.prototype);
+SqlAlchemyGraphParser.prototype.constructor = SqlAlchemyGraphParser;
+
+_.extend(SqlAlchemyGraphParser.prototype, {
+
+    // maps Sequelize relations to multiplicities
+    _RELATION_TYPE_MAP: {
+        'MANYTOMANY': '*..*',
+        'MANYTOONE': '*..1',
+        'ONETOMANY': '1..*',
+        'ONETOONE': '1..1',
+        'inheritance': '1..1'
+    },
+
+    parse: function (response) {
+        var self = this;
+
+        var vertices = self._vertices;
+        var edges = self._edges;
+
+        // fast lookup map
+        var vertexMap = {};
+        var edgeMap = {};
+
+        // compute all known vertices
+        _.each(response, function (model) {
+            var newVertex = vertices.add({
+                modelName: model['name']
+            });
+            if (_.isArray(newVertex)) {
+                newVertex = newVertex[0];
+            }
+
+            vertexMap[model['key']] = newVertex;
+        });
+
+        _.each(response, function (model) {
+            _.each(model.relations, function (relation) {
+                var sourceVertex = vertexMap[model['key']];
+                var destVertex = vertexMap[relation['target']];
+
+                if (sourceVertex && destVertex) {
+                    var multiplicity,
+                        criteria,
+                        edgeKey,
+                        existingEdge;
+
+                    multiplicity = self._RELATION_TYPE_MAP[relation['type']];
+                    if (_.isUndefined(multiplicity)) {
+                        throw new Error('Unrecognized multiplicity: ' + multiplicity);
+                    }
+
+                    // avoid duplication and merge where possible
+                    criteria = {
+                        source: sourceVertex,
+                        dest: destVertex,
+                        type: relation['type']
+                    };
+                    edgeKey = _makeKey([sourceVertex.get('modelName'), destVertex.get('modelName'), relation['type']]);
+                    existingEdge = edgeMap[edgeKey];
+                    if (!existingEdge) {
+
+                        if (relation['type'] === 'inheritance') {
+                            criteria.label = 'inherits';
+                        }
+                        else {
+                            criteria.label = relation['source_name'];
+                        }
+                        criteria.multiplicity = multiplicity;
+                        edgeMap[edgeKey] = edges.add(criteria);
+                    }
+                    else {
+                        existingEdge.set({
+                            label: existingEdge.get('label') + ', ' + relation['source_name']
+                        });
+                    }
+                }
+            });
+        });
+
+        return {
+            vertices: vertices,
+            edges: edges
+        };
+    }
+});
+
 module.exports = {
     'django': DjangoExtensionsGraphParser,
-    'sequelize': SequelizeGraphParser
+    'sequelize': SequelizeGraphParser,
+    'sqlalchemy': SqlAlchemyGraphParser
 };

@@ -18,7 +18,8 @@ Edit `data/config.json` to specify how to load your graph data
 Available JSON parsers are:
 
 - `django` (from `django-extensions` `graph_models` command with `--json` option)
-- `sequelize` (custom sequelize parser)
+- `sqlalchemy` (custom SQLAlchemy parser in `script/sqlalchemy`)
+- `sequelize` (custom sequelize parser in `script/sequelize`)
 
 
 ## Running with Docker

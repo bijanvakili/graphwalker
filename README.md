@@ -44,7 +44,7 @@ You'll only need to install the following:
 
 #### Building
 
-Run the following to install all the necessary build dependencies using [```npm```](https://github.com/npm/npm) and runtime dependencies using [```bower```](http://bower.io/).
+Run the following to install all the necessary build dependencies using [```npm```](https://github.com/npm/npm) and runtime dependencies using [```webpack```](https://webpack.github.io/).
 
     npm install
 

@@ -48,7 +48,7 @@ Run the following to install all the necessary build dependencies using [```npm`
 
     npm install
 
-To expliciltly run a manual build, run the following to bundle all Javascript code into the ```./build``` subdirectory using [```browserify```](http://browserify.org/)
+To explicitly run a manual build, run the following to bundle all Javascript code into the ```./build``` subdirectory using [```webpack```](https://webpack.github.io/).
 
     npm run build
 

@@ -20,4 +20,4 @@ services:
     ports:
       - "8080:8080"
       - "5858:5858"
-    command: npm run docker_web
+    command: yarn run docker_web

@@ -3,24 +3,21 @@
   "version": "00.00.02",
   "license": "MIT",
   "description": "Graph traversal tool for the web browser",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bijanvakili/graphwalker"
-  },
+  "repository": "https://github.com/bijanvakili/graphwalker",
   "dependencies": {
+    "backbone": "1.3.3",
+    "backbone.typeahead": "1.1.2",
+    "bluebird": "3.3.5",
     "jquery": "2.2.3",
     "lodash": "4.12.0",
-    "backbone": "1.3.3",
-    "backbone.typeahead": "https://github.com/mojotech/backbone.typeahead.git#1.1.0",
-    "bluebird": "3.3.5",
     "svg.js": "2.6.2",
     "underscore": "1.8.3"
   },
   "devDependencies": {
     "eslint": "2.2.0",
     "eslint-config-standard": "5.1.0",
-    "eslint-plugin-standard": "1.3.2",
     "eslint-plugin-promise": "1.0.8",
+    "eslint-plugin-standard": "1.3.2",
     "pre-commit": "1.1.2",
     "uglifyjs-webpack-plugin": "0.4.6",
     "webpack": "2.3.2",
@@ -31,7 +28,7 @@
     "build": "NODE_ENV=development webpack",
     "watch": "NODE_ENV=development webpack --watch --progress",
     "web": "NODE_ENV=development webpack-dev-server",
-    "docker_web": "npm install && npm run web -- --host=0.0.0.0",
+    "docker_web": "yarn install && yarn run build && yarn run web -- --host=0.0.0.0",
     "clean": "rm -rf ./build ./node_modules",
     "partial_clean": "rm -rf ./build",
     "todos": "grep -R TODO app/*",
@@ -40,5 +37,7 @@
   },
   "pre-commit": [
     "lint-changed"
-  ]
+  ],
+  "main": "index.html",
+  "author": "Bijan Vakili <bijanvakili@users.noreply.github.com>"
 }

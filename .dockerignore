@@ -2,12 +2,12 @@
 .dockerignore
 .git
 .gitignore
+.idea
 .vagrant
-bower_components/
 build/
 docker-compose.yml
 Dockerfile
 Vagrantfile
 node_modules/
-npm-debug.log
 tmp
+yarn.lock

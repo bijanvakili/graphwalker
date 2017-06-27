@@ -39,24 +39,24 @@ Open the following URL in your web browser: [http://localhost:8080/index.html](h
 
 You'll only need to install the following:
 
-- [node.js](https://nodejs.org/) v4
-- [npm](https://github.com/npm/npm) (Node.js package manager)
+- [node.js](https://nodejs.org/) v6+
+- [yarn](https://yarnpkg.com/en/) v0.24+
 
 #### Building
 
-Run the following to install all the necessary build dependencies using [```npm```](https://github.com/npm/npm) and runtime dependencies using [```webpack```](https://webpack.github.io/).
+Run the following to install all the necessary build dependencies using `yarn` and runtime dependencies using [```webpack```](https://webpack.github.io/).
 
-    npm install
+    yarn install
 
 To explicitly run a manual build, run the following to bundle all Javascript code into the ```./build``` subdirectory using [```webpack```](https://webpack.github.io/).
 
-    npm run build
+    yarn run build
 
 #### Running a Test server
 
 Run the following:
 
-    npm start
+    yarn run web
 
 (NOTE: This will implicitly run a build)
 
@@ -66,4 +66,4 @@ Open the following URL in your web browser: [http://localhost:8080/index.html](h
 
 To remove build files, run the following:
 
-    npm run clean
+    yarn run clean

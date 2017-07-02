@@ -184,9 +184,9 @@ aws4@^1.2.1:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.6.0.tgz#83ef5ca860b2b32e4a0deedee8c771b9db57471e"
 
-backbone.typeahead@1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/backbone.typeahead/-/backbone.typeahead-1.1.2.tgz#8b3139b615a3a77af976ddc36a0c807112b2db1b"
+backbone.typeahead@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/backbone.typeahead/-/backbone.typeahead-1.1.4.tgz#7f665ce48c603b46f034d1721d99e24d47c97230"
   dependencies:
     backbone "~1.1.0"
     underscore ">=1.4.3"

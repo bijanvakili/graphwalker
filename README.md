@@ -48,9 +48,15 @@ Run the following to install all the necessary build dependencies using `yarn` a
 
     yarn install
 
-To explicitly run a manual build, run the following to bundle all Javascript code into the ```./build``` subdirectory using [```webpack```](https://webpack.github.io/).
+Run the following to build and bundle all Javascript code into the ```./build``` subdirectory using [```webpack```](https://webpack.github.io/).
 
     yarn run build
+
+Run the following in a window to build in watch mode.  This will automatically rebuild if you modify any source code.
+
+    yarn run watch
+
+NOTE: `build` must be executed at least once.  `watch` will not rebuild 3rd party vendor code.
 
 #### Running a Test server
 
@@ -58,9 +64,9 @@ Run the following:
 
     yarn run web
 
-(NOTE: This will implicitly run a build)
-
 Open the following URL in your web browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)
+
+NOTE: If you wish to do development while the web server is running, then run `yarn run watch` in a separate window.
 
 #### Cleanup
 

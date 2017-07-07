@@ -2,8 +2,8 @@
   "graphDataFile": "sentry_models.json",
   "useParser": "django",
   "start": {
-    "app": "sentry",
-    "model": "Team"
+    "appName": "sentry",
+    "modelName": "Team"
   },
   "vertexColumnPageSize": 8
 }

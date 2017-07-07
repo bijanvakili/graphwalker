@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "allowJs": true,
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.iterable"
+    ],
+    "outDir": "build/ts",
+    "strict": true,
+    "target": "es5"
+  }
+}

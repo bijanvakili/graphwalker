@@ -4,39 +4,49 @@
   "license": "MIT",
   "description": "Graph traversal tool for the web browser",
   "repository": "https://github.com/bijanvakili/graphwalker",
+  "engines" : {
+    "node" : ">=6.10"
+  },
   "dependencies": {
+    "@types/backbone": "^1.3.34",
+    "@types/bluebird": "^3.5.8",
+    "@types/jquery": "^3.2.6",
+    "@types/lodash": "^4.14.68",
+    "@types/underscore": "^1.8.1",
     "backbone": "1.3.3",
-    "backbone.typeahead": "^1.1.4",
     "bluebird": "3.3.5",
     "jquery": "2.2.3",
     "lodash": "4.12.0",
-    "svg.js": "2.6.2",
+    "svg.js": "https://github.com/svgdotjs/svg.js#f7b38e94a98082699cc0702f7dab420972881869",
     "underscore": "1.8.3"
   },
   "devDependencies": {
-    "eslint": "2.2.0",
-    "eslint-config-standard": "5.1.0",
-    "eslint-plugin-promise": "1.0.8",
-    "eslint-plugin-standard": "1.3.2",
+    "@types/node": "^8.0.20",
+    "@types/webpack": "^3.0.8",
+    "awesome-typescript-loader": "^3.2.2",
     "pre-commit": "1.1.2",
+    "source-map-loader": "^0.2.1",
+    "ts-node": "^3.3.0",
+    "tslint": "^5.6.0",
+    "typescript": "^2.4.2",
     "uglifyjs-webpack-plugin": "0.4.6",
-    "webpack": "2.3.2",
-    "webpack-dev-server": "2.4.2"
+    "webpack": "^3.5.1",
+    "webpack-dev-server": "^2.7.1"
   },
   "scripts": {
-    "dist": "NODE_ENV=production webpack",
-    "build": "NODE_ENV=development webpack",
-    "watch": "NODE_ENV=development webpack --watch --progress",
-    "web": "NODE_ENV=development webpack-dev-server",
+    "dist": "NODE_ENV=production yarn run build",
+    "build": "webpack --config-name vendor && webpack --config-name app",
+    "watch": "webpack --watch --progress --config-name app",
+    "web": "webpack-dev-server",
     "docker_web": "yarn install && yarn run build && yarn run web -- --host=0.0.0.0",
     "clean": "rm -rf ./build ./node_modules",
     "partial_clean": "rm -rf ./build",
     "todos": "grep -R TODO app/*",
-    "lint": "eslint '**/*.js'",
-    "lint-changed": "git diff --name-only --cached --relative | grep '\\.js$' | xargs ./node_modules/.bin/eslint"
+    "lint-ts": "tslint -c tslint.json 'app/**/*.ts'",
+    "lint-changed-ts": "git diff --name-only --cached --relative | grep '\\.ts$' | xargs ./node_modules/.bin/tslint -c tslint.json"
   },
   "pre-commit": [
-    "lint-changed"
+    "lint-changed-ts"
   ],
   "main": "index.html",
   "author": "Bijan Vakili <bijanvakili@users.noreply.github.com>"

@@ -1,26 +1,41 @@
-# Graph Walker
+# Graphwalker
 
-This is a new project for gradual traversal of a graph.
+Provides graphs that you can read!
+
+## Introduction
+
+Graphs are are a critical abstract data type underlying much of mathematics and computer science.  They provide
+a fundamental model for describing newtorking, diagrams, routing, artificial intelligence, etc.
+
+Many advanced software tools exist today to visualize graphs such as [graphviz](http://www.graphviz.org/) and [D3.js](http://d3js.org/).  However,
+data and concepts grow quickly.  Although most visualization tools will produce impressive images, reviewing and understanding
+them can be overwhelming.
+
+`graphwalker` takes the approach of **salient** visualization:
+* Renders **localized** views of a single vertex
+* Adjancent vertices (1 degree of separation)
+* Pagination for all incoming and outgoing arcs
+* Provides reproducible navigation via:
+    * Clicking on vertices within the current view
+    * Type ahead search for vertex properties
+* HTML5 SVG display for easier export and scaling
+* [Generalized JSON format]((./docs/data_format.md)) that is not application specific
 
 ## Configuration
 
 Edit `data/config.json` to specify how to load your graph data
 
-    {
-      "graphDataFile": "<yourdata.json>",
-      "useParser": "<parser>",
-      "start": {
-        "app": "...",
-        "model": "<starting model>"
-      }
-    }
+```json
+{
+  "graph": {
+    "url": "your_models.json",
+    "startVertexId": "<SHA1 vertex ID hash>"
+  },
+  "vertexColumnPageSize": 8
+}
+```
 
-Available JSON parsers are:
-
-- `django` (from `django-extensions` `graph_models` command with `--json` option)
-- `sqlalchemy` (custom SQLAlchemy parser in `script/sqlalchemy`)
-- `sequelize` (custom sequelize parser in `script/sequelize`)
-
+The documentation on the JSON data format is [here](./docs/data_format.md).
 
 ## Running with Docker
 

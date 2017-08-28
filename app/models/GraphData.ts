@@ -1,27 +1,18 @@
 import * as Backbone from 'backbone';
 import * as _ from 'lodash';
 
-export interface VertexTarget {
-    appName: string;
-    modelName: string;
-}
-
 export class Vertex extends Backbone.Model {
     public defaults() {
         return {
-            modelName: '',
-            appName: '',
-            internalAppName: ''
+            id: null,
+            label: '',
+            searchableComponents: [],
+            properties: {},
         };
     }
 
-    public isEqual(query: VertexTarget): boolean {
-        return this.get('appName') === query.appName &&
-            this.get('modelName') === query.modelName;
-    }
-
     public displayName(): string {
-        return this.get('appName') + '.' + this.get('modelName');
+        return this.get('label');
     }
 }
 
@@ -36,8 +27,8 @@ export class Vertices extends Backbone.Collection<Vertex> {
         const partialMatch = (s: string) => (s || '').toUpperCase().match(pattern);
 
         return _(this.models)
-            .filter((v) => partialMatch(v.get('modelName')) || partialMatch(v.get('appName')))
-            .sortBy((v) => v.displayName())
+            .filter((v: Vertex) => _.some(v.get('searchableComponents'), partialMatch))
+            .sortBy((v: Vertex) => v.get('label'))
             .value();
     }
 }
@@ -45,16 +36,12 @@ export class Vertices extends Backbone.Collection<Vertex> {
 export class Edge extends Backbone.Model {
     public defaults() {
         return {
+            id: null,
+            label: '',
             source: null,
             dest: null,
-            type: 'ForeignKey',
-            label: '',
-            multiplicity: null
+            properties: {},
         };
-    }
-
-    public isInheritanceRelation(): boolean {
-        return this.get('type') === 'inheritance';
     }
 }
 
@@ -89,39 +76,37 @@ export interface IGraphParser {
 }
 
 export interface GraphOptions {
-    graphDataFile: string;
-    parser: IGraphParser;
+    url: string;
 }
 
 export class Graph extends Backbone.Model {
     private graphDataFile: string;
-    private parser: IGraphParser;
 
     constructor(attributes: any, options: GraphOptions) {
         super(attributes, options);
-        this.graphDataFile = options.graphDataFile;
-        this.parser = options.parser;
+        this.graphDataFile = options.url;
     }
 
     public defaults() {
         return {
+            graphDataFile: this.graphDataFile,
             vertices: new Vertices(),
             edges: new Edges()
         };
     }
 
-    public urlRoot = () => 'data/' + this.graphDataFile;
+    public urlRoot = () => this.graphDataFile;
 
     public parse(response: any, options?: any): any {
-        const result = this.parser.parse(response);
         return {
             graphDataFile: this.get('graphDataFile'),
-            ...result
+            vertices: new Vertices(response.vertices),
+            edges: new Edges(response.edges),
         };
     }
 
-    public findVertex(query: VertexTarget) {
-        return this.get('vertices').findWhere(query);
+    public findVertex(id: string) {
+        return this.get('vertices').get(id);
     }
 
     public getOutgoingNeighbors(vertex: Vertex) {
@@ -143,28 +128,26 @@ export class Graph extends Backbone.Model {
      * @param {boolean} isIncoming - true for incoming neighbors, false for outgoing neighbors
      */
     private getNeighbors(targetVertex: Vertex, isIncoming: boolean): NeighborDescriptions {
-        const neighbors: NeighborDescription[] = [];
+        let attrMatch: string;
+        let attrCollect: string;
 
-        this.get('edges').models.forEach((edge: Edge) => {
-            let attrMatch;
-            let attrCollect;
+        if (isIncoming) {
+            attrMatch = 'dest';
+            attrCollect = 'source';
+        }
+        else {
+            attrMatch = 'source';
+            attrCollect = 'dest';
+        }
 
-            if (isIncoming) {
-                attrMatch = 'dest';
-                attrCollect = 'source';
-            }
-            else {
-                attrMatch = 'source';
-                attrCollect = 'dest';
-            }
+        const vertices = this.get('vertices');
+        const neighbors: NeighborDescription[] = this.get('edges').models
+            .filter((edge: Edge) => edge.get(attrMatch) === targetVertex.id)
+            .map((edge: Edge) => {
+                const vertex = vertices.get(edge.get(attrCollect));
 
-            if (edge.get(attrMatch).isEqual(targetVertex.attributes)) {
-                neighbors.push(new NeighborDescription({
-                    vertex: edge.get(attrCollect),
-                    edge
-                }));
-            }
-        });
+                return new NeighborDescription({vertex, edge});
+            });
 
         return new NeighborDescriptions(neighbors);
     }

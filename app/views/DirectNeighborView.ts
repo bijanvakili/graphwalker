@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as SVG from 'svg.js';
 
 import * as EventHandlers from '../EventHandlers';
-import {Graph, NeighborDescription, Vertex, VertexTarget} from '../models/GraphData';
+import {Graph, NeighborDescription, Vertex} from '../models/GraphData';
 import SvgStyles from '../SvgStyles';
 import { UnrestrictedDictionary } from '../types';
 import { ErrorEmitterFunction, ErrorView } from './ErrorView';
@@ -244,8 +244,8 @@ class NodeColumnView extends Backbone.View<NeighborDescription> {
         return (this.vertexObjects as VertexObject[])[0];
     }
 
-    private onNodeSelected(vertexModel: Vertex) {
-        EventHandlers.navigatorChannel.trigger('vertex:selected', vertexModel);
+    private onNodeSelected(vertexId: string) {
+        EventHandlers.navigatorChannel.trigger('vertex:selected', vertexId);
     }
 
     private onItemScrolled(newTopItem: number) {
@@ -319,17 +319,13 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
         this.$el.html('');
     }
 
-    public renderWithPromise(target: VertexTarget): Promise<LocalizedGraphView> {
+    public renderWithPromise(targetVertexId: string): Promise<LocalizedGraphView> {
         const self = this;
 
         const graph = this.model;
-        const targetNode = graph.findVertex(target);
+        const targetNode = graph.findVertex(targetVertexId);
         if (_.isUndefined(targetNode)) {
-            this.reportError(
-                'Unable to find matching app/model = ' +
-                _.get(target, 'appName', '(undefined)') + '/' +
-                _.get(target, 'modelName', '(undefined)')
-            );
+            this.reportError(`Unable to find matching vertex = ${targetVertexId}`);
             return new Promise(() => self);
         }
 
@@ -348,7 +344,7 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
             window.innerHeight
         );
 
-        const textMetrics = this.textMeasureView.getTextDimensions(targetNode.get('modelName'));
+        const textMetrics = this.textMeasureView.getTextDimensions(targetNode.get('label'));
         const textMargin = SvgStyles.getStyles('vertexText').textMargin;
         const canvasMargin = SvgStyles.getStyles('canvasMargin');
         const rectBorderWidth = SvgStyles.getStyles('vertexRect').strokeWidth;

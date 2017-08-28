@@ -1,9 +1,7 @@
 {
-  "graphDataFile": "sentry_models.json",
-  "useParser": "django",
-  "start": {
-    "appName": "sentry",
-    "modelName": "Team"
+  "graph": {
+    "url": "./data/sentry_models.json",
+    "startVertexId": "2fc61006bdf469539a7c4cb463e5ccd6f679d8c9"
   },
   "vertexColumnPageSize": 8
 }

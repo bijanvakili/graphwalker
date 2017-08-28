@@ -4,8 +4,7 @@ import * as Backbone from 'backbone';
 import * as P from 'bluebird';
 import * as _ from 'lodash';
 
-import { Graph, VertexTarget } from '../models/GraphData';
-import { makeParser } from '../models/Parsers';
+import { Graph } from '../models/GraphData';
 import { Settings } from '../models/Settings';
 import { LocalizedGraphView } from './DirectNeighborView';
 import { ErrorView } from './ErrorView';
@@ -50,14 +49,8 @@ export class MainView extends Backbone.View<Graph> {
                 self.rethrowFetchError(settings, err);
             })
             .then(() => {
-                const parser = makeParser(settings.get('useParser'));
-                if (!parser) {
-                    throw new Error('Invalid parser: ' + settings.get('useParser'));
-                }
-
                 graph = new Graph({}, {
-                    graphDataFile: settings.get('graphDataFile'),
-                    parser
+                    url: settings.get('graph').url,
                 });
                 return P.resolve(graph.fetch())
                     .catch((err) => {
@@ -74,7 +67,7 @@ export class MainView extends Backbone.View<Graph> {
             });
     }
 
-    public renderAtTarget(target: VertexTarget): MainView {
+    public renderAtTarget(vertexId: string): MainView {
         if (!this.textMeasureView) {
             this.textMeasureView = new TextMeasureView();
             this.textMeasureView.render();
@@ -97,7 +90,7 @@ export class MainView extends Backbone.View<Graph> {
             this.graphView.clearContents();
         }
 
-        this.graphView.renderWithPromise(target);
+        this.graphView.renderWithPromise(vertexId);
         return this;
     }
 

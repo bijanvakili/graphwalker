@@ -275,8 +275,8 @@ export class TypeAheadView extends Backbone.View<IGraphWithTypeAhead> {
     private queryResults: Vertex[];
 
     private template: _.TemplateExecutor = _.template(
-        '<input type="text" class="typeahead-textentry" />' +
-        '<div class="typeahead-results-container" taxindex="-1" />'
+        '<input class="typeahead-textentry" />' +
+        '<div class="typeahead-results-container" tabindex="-1" />'
     );
 
     constructor(options?: Backbone.ViewOptions<IGraphWithTypeAhead>) {
@@ -338,7 +338,7 @@ export class TypeAheadView extends Backbone.View<IGraphWithTypeAhead> {
         this.queryResultsView.updateResults(
             _(results)
                 .slice(0, MAX_ITEM_RESULTS)
-                .map((r) => r.displayName())
+                .map((r: Vertex) => r.get('label'))
                 .value()
         );
 
@@ -368,7 +368,7 @@ export class TypeAheadView extends Backbone.View<IGraphWithTypeAhead> {
 
         this.onReset();
         this.queryInputView.resetText();
-        EventHandlers.navigatorChannel.trigger('vertex:selected', vertex);
+        EventHandlers.navigatorChannel.trigger('vertex:selected', vertex.id);
     }
 
     private onQueryItemMove(direction: TypeAheadSelectDirection) {

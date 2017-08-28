@@ -1,7 +1,7 @@
 import * as Backbone from 'backbone';
 
 import { navigatorChannel } from '../EventHandlers';
-import { Graph, VertexTarget } from '../models/GraphData';
+import { Graph } from '../models/GraphData';
 import { Settings } from '../models/Settings';
 import { MainView } from '../views/MainView';
 
@@ -18,9 +18,8 @@ export class Navigator extends Backbone.Router {
 
     constructor(options: INavigatorOptions) {
         const routes = {
-            ':appName/:modelName':  'moveToQualifiedVertex',
-            ':modelName':           'moveToUnqualifiedVertex',
-            '':                     'moveToStartVertex',
+            ':vertexId':  'onMoveToVertex',
+            '':           'onMoveToStartVertex',
         };
         super({routes});
         this.settings = options.settings;
@@ -32,29 +31,15 @@ export class Navigator extends Backbone.Router {
         this.listenTo(navigatorChannel, 'vertex:selected', this.onVertexSelected);
     }
 
-    private moveToStartVertex() {
-        const startNode: VertexTarget = this.settings.get('start');
-
-        this.onMove(startNode.appName, startNode.modelName);
+    private onMoveToStartVertex() {
+        this.onMoveToVertex(this.settings.get('graph').startVertexId);
     }
 
-    private moveToQualifiedVertex(appName: string, modelName: string) {
-        this.onMove(appName, modelName);
+    private onMoveToVertex(vertexId: string) {
+        this.view.renderAtTarget(vertexId);
     }
 
-    private moveToUnqualifiedVertex(modelName: string) {
-        const defaultApp = this.settings.get('start').appName;
-        this.onMove(defaultApp, modelName);
-    }
-
-    private onMove(appName: string, modelName: string) {
-        this.view.renderAtTarget({appName, modelName});
-    }
-
-    private onVertexSelected(vertexModel: Backbone.Model) {
-        Backbone.history.navigate(
-            vertexModel.get('appName') + '/' + vertexModel.get('modelName'),
-            true,
-        );
+    private onVertexSelected(vertexId: string) {
+        Backbone.history.navigate(vertexId, {trigger: true});
     }
 }

@@ -52,7 +52,7 @@ export class VertexObject extends BaseViewGroup {
                 });
 
                 const labelTextStyle = SvgStyles.getStyles('vertexText');
-                const labelText = self.vertexData.get('modelName');
+                const labelText = self.vertexData.get('label');
                 self.labelObj = self.options.svg.text(labelText)
                     .attr(_.pick(labelTextStyle, ['x', 'y', 'fill']))
                     .font({
@@ -94,7 +94,7 @@ export class VertexObject extends BaseViewGroup {
             }
             default: {
                 throw new Error(
-                    'model(' + this.vertexData.get('modelName') + ') got unrecognized side: ' +
+                    'model(' + this.vertexData.id + ') got unrecognized side: ' +
                     (side || '(undefined)')
                 );
             }
@@ -107,6 +107,6 @@ export class VertexObject extends BaseViewGroup {
     }
 
     private onClick() {
-        this.trigger('model:selected', this.vertexData);
+        this.trigger('model:selected', this.vertexData.id);
     }
 }

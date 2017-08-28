@@ -61,14 +61,9 @@ export class EdgeObject extends BaseViewGroup {
         ).style(SvgStyles.getStyles('edgeLine'));
         self.addChild(edgeLineObj);
 
-        let labelText = self.edgeData.get('label');
-        if (self.edgeData.get('multiplicity')) {
-            labelText = labelText + ' (' + self.edgeData.get('multiplicity') + ')';
-        }
-
         // draw the label adjacent to the first segment
         const labelObjStyle = SvgStyles.getStyles('edgeText');
-        const labelObj = self.options.svg.text(labelText)
+        const labelObj = self.options.svg.text(self.edgeData.get('label'))
             .attr({fill: labelObjStyle.fontFill})
             .font({
                 family: labelObjStyle.fontFamily,

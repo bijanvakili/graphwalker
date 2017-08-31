@@ -4,13 +4,13 @@ import * as _ from 'lodash';
 import * as SVG from 'svg.js';
 
 import * as EventHandlers from '../EventHandlers';
-import {Graph, NeighborDescription, Vertex} from '../models/GraphData';
+import { Graph, NeighborDescription, Vertex } from '../models/GraphData';
 import SvgStyles from '../SvgStyles';
 import { UnrestrictedDictionary } from '../types';
 import { ErrorEmitterFunction, ErrorView } from './ErrorView';
 import { PositionableGroupOptions } from './objects/BaseViewGroup';
 import { EdgeDirectionIndicatorObject, EdgeObject, EdgeObjectOptions, EdgeType } from './objects/EdgeObject';
-import { ConnectionSide, VertexObject } from './objects/VertexObject';
+import { ConnectionSide, LabelJustification, VertexObject } from './objects/VertexObject';
 import { TextMeasureView } from './TextMeasureView';
 
 function getNodeHeight(): number {
@@ -90,6 +90,7 @@ interface NodeColumnViewOptions extends Backbone.ViewOptions<NeighborDescription
     targetVertexObject: VertexObject;
     maxVisibleNodes: number;
     reportError: ErrorEmitterFunction;
+    labelJustification: LabelJustification;
 }
 
 class NodeColumnView extends Backbone.View<NeighborDescription> {
@@ -136,7 +137,8 @@ class NodeColumnView extends Backbone.View<NeighborDescription> {
                 reportError: options.reportError,
                 model: neighbor.vertex(),
                 x: self.left,
-                y: self.top
+                y: self.top,
+                labelJustification: options.labelJustification
             });
 
             self.listenTo(vertexObject, 'model:selected', self.onNodeSelected);
@@ -391,7 +393,8 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
             reportError: self.reportError,
             model: targetNode,
             x: targetNodePos.left,
-            y: targetNodePos.top
+            y: targetNodePos.top,
+            labelJustification: LabelJustification.Center
         });
         const targetVertexObject: VertexObject = self.targetVertexObject;
 
@@ -406,7 +409,8 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
                 collection: incomingNeighbors,
                 edgeType: EdgeType.Incoming,
                 scrollerView: self.incomingScrollerView as NodeColumnScrollerView,
-                reportError: self.reportError
+                reportError: self.reportError,
+                labelJustification: LabelJustification.Left
             });
             return self.incomingNodesView.load();
         }).then(() => {
@@ -420,7 +424,7 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
             ) as number;
 
             const outgoingPos: UnrestrictedDictionary = {};
-            outgoingPos.left = svg.width() - canvasMargin.right - maxOutgoingTextWidth -
+            outgoingPos.left = svg.width() - canvasMargin.right -
                 (textMargin * 2) - (rectBorderWidth * 2);
             outgoingPos.top = canvasMargin.top;
 
@@ -433,12 +437,13 @@ export class LocalizedGraphView extends Backbone.View<Graph> {
                 collection: outgoingNeighbors,
                 edgeType: EdgeType.Outgoing,
                 scrollerView: self.outgoingScrollerView as NodeColumnScrollerView,
-                reportError: self.reportError
+                reportError: self.reportError,
+                labelJustification: LabelJustification.Right
             });
 
             // adjust the right scroller view if visible
             if (self.outgoingScrollerView) {
-                self.outgoingScrollerView.$el.css('left', outgoingPos.left);
+                self.outgoingScrollerView.$el.css('left', outgoingPos.left - maxOutgoingTextWidth);
             }
 
             return self.outgoingNodesView.load();

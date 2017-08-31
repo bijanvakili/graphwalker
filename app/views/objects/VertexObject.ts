@@ -5,11 +5,19 @@ import * as SVG from 'svg.js';
 
 import { Vertex } from '../../models/GraphData';
 import SvgStyles from '../../SvgStyles';
+import { UnrestrictedDictionary } from '../../types';
 import { BaseViewGroup, PositionableGroupOptions } from './BaseViewGroup';
 
 export enum ConnectionSide {
     Left = 'left',
     Right = 'down',
+}
+
+// maps to SVG text-anchor attribute
+export enum LabelJustification {
+    Left = 'start',
+    Center = 'middle',
+    Right = 'end'
 }
 
 export interface ConnectionPoint {
@@ -19,16 +27,19 @@ export interface ConnectionPoint {
 
 export interface VertexObjectOptions extends PositionableGroupOptions {
     model: Vertex;
+    labelJustification: LabelJustification;
 }
 
 export class VertexObject extends BaseViewGroup {
     private vertexData: Vertex;
     private iconObj: SVG.Image;
+    private labelJustification: LabelJustification;
     private labelObj: SVG.Text;
 
     constructor(options: VertexObjectOptions) {
         super(options);
         this.vertexData = options.model;
+        this.labelJustification = options.labelJustification;
         _.extend(this, Backbone.Events);
     }
 
@@ -52,12 +63,21 @@ export class VertexObject extends BaseViewGroup {
                 });
 
                 const labelTextStyle = SvgStyles.getStyles('vertexText');
+                const labelAttributes: UnrestrictedDictionary = _.pick(labelTextStyle, ['x', 'y', 'fill']);
                 const labelText = self.vertexData.get('label');
+
+                if (self.labelJustification === LabelJustification.Center) {
+                    labelAttributes.x += self.iconObj.width();
+                } else if (self.labelJustification === LabelJustification.Right) {
+                    labelAttributes.x += self.iconObj.width() / 2;
+                }
+
                 self.labelObj = self.options.svg.text(labelText)
-                    .attr(_.pick(labelTextStyle, ['x', 'y', 'fill']))
+                    .attr(labelAttributes)
                     .font({
                         family: labelTextStyle.fontFamily,
-                        size: labelTextStyle.fontSize
+                        size: labelTextStyle.fontSize,
+                        anchor: self.labelJustification
                     })
                     .click(() => {
                         self.onClick();

@@ -19,7 +19,7 @@ them can be overwhelming.
     * Clicking on vertices within the current view
     * Type ahead search for vertex properties
 * HTML5 SVG display for easier export and scaling
-* [Generalized JSON format]((./docs/data_format.md)) that is not application specific
+* [Generalized JSON format](./docs/data_format.md) that is not application specific
 
 ## Configuration
 

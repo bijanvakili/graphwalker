@@ -30,7 +30,7 @@ You can quickly produce graphs by using these exporters for these well known app
 |[Airflow](https://airflow.incubator.apache.org/)|[graphwalker-airflow](https://github.com/bijanvakili/graphwalker-airflow)|DAGs, tasks and dependencies|python|
 |[Django](https://www.djangoproject.com/)|[graphwalker-django](https://github.com/bijanvakili/graphwalker-django)|ORM models and relationships|python|
 |[SQLAlchemy](https://www.sqlalchemy.org/)|[graphwalker-sqlalchemy](https://github.com/bijanvakili/graphwalker-sqlalchemy)|ORM models and relationships|python|
-|[Sequelize](http://docs.sequelizejs.com/)[graphwalker-sequelize](https://github.com/bijanvakili/graphwalker-sequelize)|ORM models and relationships|node.js|
+|[Sequelize](http://docs.sequelizejs.com/)|[graphwalker-sequelize](https://github.com/bijanvakili/graphwalker-sequelize)|ORM models and relationships|node.js|
 
 You can even write your own.
 

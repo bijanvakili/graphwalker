@@ -21,6 +21,19 @@ them can be overwhelming.
 * HTML5 SVG display for easier export and scaling
 * [Generalized JSON format](./docs/data_format.md) that is not application specific
 
+## Graph Data
+
+You can quickly produce graphs by using these exporters for these well known applications:
+
+|Application|Exporter|Content|Platform|
+|:----------|:-------|:------|:-------|
+|[Airflow](https://airflow.incubator.apache.org/)|[graphwalker-airflow](https://github.com/bijanvakili/graphwalker-airflow)|DAGs, tasks and dependencies|python|
+|[Django](https://www.djangoproject.com/)|[graphwalker-django](https://github.com/bijanvakili/graphwalker-django)|ORM models and relationships|python|
+|[SQLAlchemy](https://www.sqlalchemy.org/)|[graphwalker-sqlalchemy](https://github.com/bijanvakili/graphwalker-sqlalchemy)|ORM models and relationships|python|
+|[Sequelize](http://docs.sequelizejs.com/)[graphwalker-sequelize](https://github.com/bijanvakili/graphwalker-sequelize)|ORM models and relationships|node.js|
+
+You can even write your own.
+
 ## Configuration
 
 Edit `data/config.json` to specify how to load your graph data
@@ -28,7 +41,7 @@ Edit `data/config.json` to specify how to load your graph data
 ```json
 {
   "graph": {
-    "url": "your_models.json",
+    "url": "your_graph.json",
     "startVertexId": "<SHA1 vertex ID hash>"
   },
   "vertexColumnPageSize": 8

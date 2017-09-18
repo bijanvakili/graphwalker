@@ -11,3 +11,7 @@
 * [tslint](https://palantir.github.io/tslint/)
 * [yarn cli](https://yarnpkg.com/en/docs/cli/)
 * [webpack 2](https://webpack.js.org/configuration/)
+
+## Theory
+
+* [Graph Terminology](http://btechsmartclass.com/DS/U3_T8.html)

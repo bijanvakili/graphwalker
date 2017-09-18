@@ -1,4 +1,4 @@
-import { UnrestrictedDictionary} from './types';
+import { UnrestrictedDictionary} from './common/ObjectTypes';
 
 interface IAllStyles {
     [key: string]: UnrestrictedDictionary;
@@ -10,7 +10,7 @@ const allStyles: IAllStyles = {
     canvasMargin: {
         left: 10,
         right: 10,
-        top: 10,
+        top: 20,
     },
 
     edgeLine: {
@@ -24,9 +24,6 @@ const allStyles: IAllStyles = {
         fontFill: 'black',
         fontSize: 12,
         fontStyle: 'italic',
-
-        x: 40,
-        y: 10,
     },
 
     // styles for icon within a single vertex object

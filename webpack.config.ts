@@ -40,11 +40,17 @@ const config: webpack.Configuration[] = [
         name: 'vendor',
         entry: {
             vendor: [
-                'backbone',
-                'bluebird',
-                'jquery',
+                'history',
                 'lodash',
-                'svg.js'
+                'react',
+                'react-dom',
+                'react-redux',
+                'react-router',
+                'react-router-redux',
+                'redux',
+                'redux-actions',
+                'redux-thunk',
+                'whatwg-fetch',
             ]
         },
         output: {
@@ -67,14 +73,14 @@ const config: webpack.Configuration[] = [
             contentBase: __dirname
         },
         entry: {
-            app: './app/main.ts'
+            app: './app/main.tsx'
         },
         output: defaultOutputOptions,
         module: {
             rules: [
                 {
                     // All files with a '.ts' extension will be handled by 'awesome-typescript-loader'.
-                    test: /\.ts$/,
+                    test: /\.tsx?$/,
                     loader: 'awesome-typescript-loader'
                 },
                 {
@@ -102,7 +108,7 @@ const config: webpack.Configuration[] = [
             alias: {
                 app: path.resolve(__dirname, 'app')
             },
-            extensions: ['.ts', '.js']
+            extensions: ['.ts', '.tsx', '.js']
         }
     }
 ];

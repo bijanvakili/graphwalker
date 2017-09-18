@@ -28,11 +28,11 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
+    top: 20px;
 }
 
 .walker-image-container {
     position: relative;
-    top: 20px;
 }
 
 .column-scroll-container {

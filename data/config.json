@@ -3,5 +3,9 @@
     "url": "./data/sentry_models.json",
     "startVertexId": "2fc61006bdf469539a7c4cb463e5ccd6f679d8c9"
   },
+  "images": {
+    "arrow.svg": {"height": 32, "width": 32},
+    "basic_node.svg": {"height": 16, "width": 16}
+  },
   "vertexColumnPageSize": 8
 }

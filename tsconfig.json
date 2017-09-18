@@ -2,10 +2,11 @@
   "compilerOptions": {
     "sourceMap": true,
     "allowJs": true,
+    "jsx": "React",
     "lib": [
       "dom",
       "es5",
-      "es2015.iterable"
+      "es2015"
     ],
     "outDir": "build/ts",
     "strict": true,

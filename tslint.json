@@ -6,7 +6,7 @@
     "jsRules": {},
     "rules": {
         "interface-name": [false],
-        "quotemark": [true, "single", "avoid-escape"],
+        "quotemark": [true, "single", "avoid-escape", "jsx-double"],
         "max-classes-per-file": [false],
         "object-literal-sort-keys": false,
         "one-line": [false],

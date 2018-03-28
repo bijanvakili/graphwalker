@@ -1,6 +1,6 @@
 {
   "name": "graphwalker",
-  "version": "00.00.02",
+  "version": "00.00.03",
   "license": "MIT",
   "description": "Graph traversal tool for the web browser",
   "repository": "https://github.com/bijanvakili/graphwalker",

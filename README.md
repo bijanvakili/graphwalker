@@ -12,12 +12,13 @@ data and concepts grow quickly.  Although most visualization tools will produce 
 them can be overwhelming.
 
 `graphwalker` takes the approach of **salient** visualization:
+
 * Renders **localized** views of a single vertex
 * Adjancent vertices (1 degree of separation)
 * Pagination for all incoming and outgoing arcs
 * Provides reproducible navigation via:
-    * Clicking on vertices within the current view
-    * Type ahead search for vertex properties
+  * Clicking on vertices within the current view
+  * Type ahead search for vertex properties
 * HTML5 SVG display for easier export and scaling
 * [Generalized JSON format](./docs/data_format.md) that is not application specific
 
@@ -67,10 +68,10 @@ Open the following URL in your web browser: [http://localhost:8080/index.html](h
 
 You'll only need to install the following:
 
-- [node.js](https://nodejs.org/) v6+
-- [yarn](https://yarnpkg.com/en/) v0.24+
+* [node.js](https://nodejs.org/) v6+
+* [yarn](https://yarnpkg.com/en/) v0.24+
 
-#### Building
+### Building
 
 Run the following to install all the necessary build dependencies using `yarn` and runtime dependencies using [```webpack```](https://webpack.github.io/).
 
@@ -86,7 +87,7 @@ Run the following in a window to build in watch mode.  This will automatically r
 
 NOTE: `build` must be executed at least once.  `watch` will not rebuild 3rd party vendor code.
 
-#### Running a Test server
+### Running a Test server
 
 Run the following:
 

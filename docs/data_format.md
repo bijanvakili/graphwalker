@@ -44,7 +44,7 @@ The JSON currently only provides two root level properties which represent array
 ### Edge Format
 
 ```json
-[     
+[
   {
     "id": "1d942b8a57669a54d067591f07ac0d1c917413c1",
     "label": "inheritance",
@@ -71,21 +71,19 @@ The JSON currently only provides two root level properties which represent array
 * TODO Refactor JSON into a _serialization_ format for large graph data sources
 * TODO URLs for representation images
 
-
 Graph
     vertices
     edges
-    
+
 Vertex
     id
     label (displayName)
     searchableComponents
     properties {}
-    
+
 Edge
     id
     source
     dest
     label
     properties {}
-    

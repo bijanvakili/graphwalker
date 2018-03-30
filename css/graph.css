@@ -95,3 +95,10 @@ body {
 .typeahead-results-item.active {
     background-color: #4AA02C;
 }
+
+.graph-scroll-summary {
+    fill: #4c81c9;
+    font-family: arial, serif;
+    font-size: 12px;
+    text-anchor: start;
+}

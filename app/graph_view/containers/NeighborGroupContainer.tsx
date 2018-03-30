@@ -67,6 +67,8 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
             return null;
         }
         const idxEdge = this.props.currItem;
+        const numEdges = this.props.edges.length;
+        const idxLastVisible = Math.min(idxEdge + this.props.maxDisplayItems, numEdges - 1);
         const visibleEdges = this.props.edges.slice(idxEdge, idxEdge + this.props.maxDisplayItems);
 
         let edgeStartX: number;
@@ -111,6 +113,9 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
                         />
                     </div>
                 </foreignObject>
+                <text className="graph-scroll-summary" x={scrollX + 80} y="-4">
+                    ({idxEdge + 1} - {idxLastVisible + 1}) / {numEdges}
+                </text>
                 <g>
                     {visibleEdges.map((edge: Edge, idxNodeObject: number) => {
                         const vertexId = this.props.getAdjacentVertexId(edge);

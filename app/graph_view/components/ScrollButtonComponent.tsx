@@ -15,7 +15,8 @@ export class ScrollButtonComponent extends React.Component<ScrollButtonProps> {
     public render() {
         return (
             <button
-                className="column-scroll-button"
+                // TODO switch to using less rather than force combining styles
+                className="column-scroll-button pure-button"
                 disabled={!this.props.enable}
                 onClick={this.props.onClick}
             >{this.props.label}</button>

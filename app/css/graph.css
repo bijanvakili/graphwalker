@@ -35,6 +35,24 @@ body {
     position: relative;
 }
 
+.column-scroll-button {
+    font-size: 70%;
+    background-color: #30007F; /* fallback */
+    background-color: rgba(48, 0, 127, .9);
+    color: white;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.column-scroll-button[disabled],
+.column-scroll-button-disabled,
+.column-scroll-button-disabled:hover,
+.column-scroll-button-disabled:focus,
+.column-scroll-button-disabled:active {
+    background-color: rgba(48, 0, 127, 0.4);
+    opacity: inherit;
+    filter: inherit;
+}
+
 .column-scroll-container {
     position: absolute;
     top: 0;

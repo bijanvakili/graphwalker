@@ -4,6 +4,7 @@ import * as process from 'process';
 import * as webpack from 'webpack';
 /* tslint:disable:no-var-requires */
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 /* tslint:enable:no-var-requires */
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -13,7 +14,9 @@ const defaultOptions = {
     devtool: (isProduction ? 'source-map' : 'inline-source-map') as webpack.Options.Devtool,
 };
 
-const defaultPlugins = [];
+const defaultPlugins = [
+    new ExtractTextPlugin('styles-[name].css')
+];
 if (isProduction) {
     defaultPlugins.push(new UglifyJSPlugin({ sourceMap: true }));
 }
@@ -22,6 +25,20 @@ const defaultOutputOptions = {
     filename: 'bundle-[name].js',
     path: buildDirectory,
 };
+
+const defaultRules = [
+    {
+        // All files with a '.css' extension will be handled by
+        // 'extract-text-webpack-plugin, css-loader and style-loader'.
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract({
+            fallback: 'style-loader',
+            use: [
+                { loader: 'css-loader', options: { minimize: isProduction } }
+            ],
+        })
+    }
+];
 
 // Bug in @types/webpack with fix implemented here:
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/18902
@@ -42,6 +59,7 @@ const config: webpack.Configuration[] = [
             vendor: [
                 'history',
                 'lodash',
+                'purecss',
                 'react',
                 'react-dom',
                 'react-redux',
@@ -56,6 +74,9 @@ const config: webpack.Configuration[] = [
         output: {
             ...defaultOutputOptions,
             library: 'vendor'
+        },
+        module: {
+            rules: defaultRules
         },
         plugins: [
             new webpack.DllPlugin({
@@ -73,11 +94,15 @@ const config: webpack.Configuration[] = [
             contentBase: __dirname
         },
         entry: {
-            app: './app/main.tsx'
+            app: [
+                './app/main.tsx',
+                './app/css/graph.css',
+            ]
         },
         output: defaultOutputOptions,
         module: {
             rules: [
+                ...defaultRules,
                 {
                     // All files with a '.ts' extension will be handled by 'awesome-typescript-loader'.
                     test: /\.tsx?$/,

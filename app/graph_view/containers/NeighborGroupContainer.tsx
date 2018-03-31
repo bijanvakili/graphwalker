@@ -68,6 +68,7 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
         }
         const idxEdge = this.props.currItem;
         const numEdges = this.props.edges.length;
+        const showEdgeScollButtons = (numEdges > this.props.maxDisplayItems);
         const idxLastVisible = Math.min(idxEdge + this.props.maxDisplayItems, numEdges - 1);
         const visibleEdges = this.props.edges.slice(idxEdge, idxEdge + this.props.maxDisplayItems);
 
@@ -99,23 +100,27 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
 
         return (
             <g transform={`translate(${this.props.groupPos.x} ${this.props.groupPos.y})`}>
-                <foreignObject width="200" height="18" x={scrollX} y="-18">
-                    <div>
-                        <ScrollButtonComponent
-                            label="Up"
-                            enable={this.props.enableScrollUp}
-                            onClick={(e) => this.onClick(e, ScrollDirection.Up)}
-                        />
-                        <ScrollButtonComponent
-                            label="Down"
-                            enable={this.props.enableScrollDown}
-                            onClick={(e) => this.onClick(e, ScrollDirection.Down)}
-                        />
-                    </div>
-                </foreignObject>
-                <text className="graph-scroll-summary" x={scrollX + 80} y="-4">
-                    ({idxEdge + 1} - {idxLastVisible + 1}) / {numEdges}
-                </text>
+                {showEdgeScollButtons && (
+                    <g>
+                        <foreignObject width="200" height="18" x={scrollX} y="-22">
+                            <div className="pure-button-group" role="group">
+                                <ScrollButtonComponent
+                                    label="Up"
+                                    enable={this.props.enableScrollUp}
+                                    onClick={(e) => this.onClick(e, ScrollDirection.Up)}
+                                />
+                                <ScrollButtonComponent
+                                    label="Down"
+                                    enable={this.props.enableScrollDown}
+                                    onClick={(e) => this.onClick(e, ScrollDirection.Down)}
+                                />
+                            </div>
+                        </foreignObject>
+                        <text className="graph-scroll-summary" x={scrollX + 94} y="-4">
+                            ({idxEdge + 1} - {idxLastVisible + 1}) / {numEdges}
+                        </text>
+                    </g>
+                )}
                 <g>
                     {visibleEdges.map((edge: Edge, idxNodeObject: number) => {
                         const vertexId = this.props.getAdjacentVertexId(edge);

@@ -1,4 +1,4 @@
-import {createBrowserHistory, createHashHistory, History} from 'history';
+import {createHashHistory, History} from 'history';
 import * as React from 'react';
 import { Provider } from 'react-redux';
 import { Route } from 'react-router';

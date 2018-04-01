@@ -51,19 +51,6 @@ Edit `data/config.json` to specify how to load your graph data
 
 The documentation on the JSON data format is [here](./docs/data_format.md).
 
-## Running with Docker
-
-It is recommended to start the development web server in the _foreground_ in a separate console session:
-
-    docker-compose up web
-
-This will allow you to see log output if there is a build error.  However, if you wish to run it in the background
-and have no output:
-
-    docker-compose up -d web
-
-Open the following URL in your web browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)
-
 ## Running locally
 
 You'll only need to install the following:
@@ -102,3 +89,16 @@ NOTE: If you wish to do development while the web server is running, then run `y
 To remove build files, run the following:
 
     yarn run clean
+
+## Running with Docker
+
+It is recommended to start the development web server in the _foreground_ in a separate console session:
+
+    docker-compose up web
+
+This will allow you to see log output if there is a build error.  However, if you wish to run it in the background
+and have no output:
+
+    docker-compose up -d web
+
+Open the following URL in your web browser: [http://localhost:8080/index.html](http://localhost:8080/index.html)

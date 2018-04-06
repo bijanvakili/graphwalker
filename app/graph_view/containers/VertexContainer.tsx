@@ -66,18 +66,6 @@ class VertexContainer extends React.Component<VertexContainerProps, GlobalState>
     }
 }
 
-function mapStateToProps(state: GlobalState) {
-    if (!state.graphState) {
-        return {
-            labelAnchor: {x: 0, y: 0}
-        };
-    }
-
-    return {
-        labelAnchor: state.graphState.vertexLabelAnchor
-    };
-}
-
 // TODO find out how to avoid this cast
 const rActions = rootActions.root as any;
 
@@ -88,6 +76,6 @@ function mapDispatchToProps(dispatch: Dispatch<GlobalState>) {
 }
 
 export default connect(
-    mapStateToProps,
+    null,
     mapDispatchToProps
 )(VertexContainer);

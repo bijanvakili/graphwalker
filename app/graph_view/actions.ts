@@ -7,7 +7,8 @@ export const graphActions = createActions({
         SCROLL_COLUMN: (
             direction: ScrollDirection,
             columnGroup: IncidentEdgeDirection,
-            maxItems: number
-        ) => ({direction, columnGroup, maxItems}),
+            maxItems: number,
+            maxVisibleItems: number,
+        ) => ({direction, columnGroup, maxItems, maxVisibleItems}),
     }
 });

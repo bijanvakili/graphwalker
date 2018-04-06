@@ -9,36 +9,27 @@ interface VertexTextStyle {
     textHeight: number;
 }
 
-interface TextMeasureProps {
-    width: number;
-}
-
-export class TextMeasureComponent extends React.Component<TextMeasureProps> {
+export class TextMeasure {
     private textMeasureContext?: CanvasRenderingContext2D;
     private fontSettings: VertexTextStyle;
 
-    constructor(props: TextMeasureProps) {
-        super(props);
+    public constructor() {
+        this.textMeasureContext = undefined;
         this.fontSettings = (SvgStyles.getStyles('vertexText') as VertexTextStyle);
     }
 
-    public render() {
-        return (
-            <canvas
-                ref={(elem: HTMLCanvasElement) =>
-                    this.textMeasureContext = elem.getContext('2d') as CanvasRenderingContext2D
-                }
-                className="text-measure"
-                width={this.props.width}
-            />
-        );
+    public setCanvas(elem: HTMLCanvasElement) {
+        if (elem) {
+            this.textMeasureContext = elem.getContext('2d') as CanvasRenderingContext2D;
+            this.textMeasureContext.font = this.fontSettings.fontSize + 'px ' + this.fontSettings.fontFamily;
+        }
+        else {
+            this.textMeasureContext = undefined;
+        }
     }
 
-    public componentDidMount() {
-        if (!this.textMeasureContext) {
-            throw new Error('TextMeasureComponent did not set this.textMeasureContext');
-        }
-        this.textMeasureContext.font = this.fontSettings.fontSize + 'px ' + this.fontSettings.fontFamily;
+    public isReady(): boolean {
+        return this.textMeasureContext !== undefined;
     }
 
     /**
@@ -57,5 +48,23 @@ export class TextMeasureComponent extends React.Component<TextMeasureProps> {
             width: textMetrics.width,
             height: this.fontSettings.textHeight
         };
+    }
+}
+
+interface TextMeasureComponentProps {
+    width: number;
+    textMeasure: TextMeasure;
+}
+
+export class TextMeasureComponent extends React.Component<TextMeasureComponentProps> {
+    public render() {
+        const textMeasure = this.props.textMeasure;
+        return (
+            <canvas
+                ref={textMeasure.setCanvas.bind(textMeasure)}
+                className="text-measure"
+                width={this.props.width}
+            />
+        );
     }
 }

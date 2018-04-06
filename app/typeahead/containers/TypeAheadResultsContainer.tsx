@@ -14,28 +14,25 @@ interface ResultItemData {
 }
 
 interface ResultsContainerProps {
-    data: {
-        results: ResultItemData[];
-        // NOTE: using ? suffix doesn't seem to work
-        currentSelection: number | undefined;
-    };
-    actions: {
-        onItemSelected: ActionFunctionAny<{vertexId: string}>;
-    };
+    results: ResultItemData[];
+    currentSelection: number;
+
+    onItemSelected: ActionFunctionAny<{vertexId: string}>;
 }
 
+// TODO cache results using React.Component.setState()
 class ResultsContainer extends React.Component<ResultsContainerProps> {
     public render() {
-        const hasResults: boolean = this.props.data.results.length > 0;
+        const hasResults: boolean = this.props.results.length > 0;
         return (
             <div className={'typeahead-results-container' + (hasResults ? ' active' : '')} tabIndex={-1}>
-                {this.props.data.results.map((vertex, idx) => (
+                {this.props.results.map((vertex, idx) => (
                     <ResultItemComponent
                         key={vertex.vertexId}
                         data={
                             {
                                 displayName: vertex.displayName,
-                                isSelected: this.props.data.currentSelection === idx
+                                isSelected: this.props.currentSelection === idx
                             }
                         }
                         callbacks={
@@ -43,7 +40,7 @@ class ResultsContainer extends React.Component<ResultsContainerProps> {
                                 onClick: (e: ElementMouseEvent) => {
                                     e.stopPropagation();
                                     e.preventDefault();
-                                    this.props.actions.onItemSelected(vertex.vertexId);
+                                    this.props.onItemSelected(vertex.vertexId);
                                 }
                             }
                         }
@@ -61,12 +58,10 @@ const mapStateToProps = (state: GlobalState) => {
     }
 
     return {
-        data: {
-            results: typeaheadState.results.map((v) => {
-                return {displayName: v.label, vertexId: v.id };
-            }),
-            currentSelection: typeaheadState.currentSelection,
-        }
+        results: typeaheadState.results.map((v) => {
+            return {displayName: v.label, vertexId: v.id };
+        }),
+        currentSelection: typeaheadState.currentSelection,
     };
 };
 
@@ -74,11 +69,9 @@ const mapStateToProps = (state: GlobalState) => {
 const rActions = (rootActions as any).root;
 
 const mapDispatchToProps = (dispatch: Dispatch<GlobalState>) => {
-    return {
-        actions: bindActionCreators({
-            onItemSelected: (vertexId: string) => rActions.selectVertex(vertexId),
-        }, dispatch)
-    };
+    return bindActionCreators({
+        onItemSelected: (vertexId: string) => rActions.selectVertex(vertexId),
+    }, dispatch);
 };
 
 export default connect(

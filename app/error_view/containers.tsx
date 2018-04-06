@@ -8,7 +8,9 @@ import {ErrorState} from './models';
 class ErrorViewContainer extends React.Component<ErrorState> {
     public render() {
         return (
-            <ErrorDisplayComponent message={this.props.message} />
+            <div className="error-container">
+                <ErrorDisplayComponent message={this.props.message} />
+            </div>
         );
     }
 }

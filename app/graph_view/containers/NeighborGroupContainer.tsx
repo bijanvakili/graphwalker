@@ -7,14 +7,15 @@ import {ActionFunctionAny} from 'redux-actions';
 import {ElementMouseEvent} from '../../common/EventTypes';
 import {Point} from '../../common/ObjectTypes';
 import {GlobalState} from '../../root/models/GlobalState';
-import {Edge, IncidentEdgeDirection, ScrollDirection, Vertex} from '../../root/models/Graph';
+import {Edge, Graph, IncidentEdgeDirection, ScrollDirection} from '../../root/models/Graph';
+import {Settings} from '../../root/models/Settings';
 import SvgStyles from '../../SvgStyles';
 import {graphActions} from '../actions';
 import {EdgeDirectionIndicatorObject} from '../components/EdgeDirectionIndicatorObject';
 import {EdgeObject} from '../components/EdgeObject';
 import {ScrollButtonComponent} from '../components/ScrollButtonComponent';
 import {LabelJustification} from '../components/VertexObject';
-import {GraphViewState} from '../models';
+import {GraphViewState, VisualOffsets} from '../models';
 import VertexContainer from './VertexContainer';
 
 // TODO move into CSS
@@ -26,27 +27,22 @@ function getNodeHeight(): number {
 }
 
 interface NeighborGroupContainerInputProps {
-    // input properties
+    graph: Graph;
+    settings: Settings;
     edgeDirection: IncidentEdgeDirection;
     edges: Edge[];
     currItem: number;
+
+    offsets: VisualOffsets;
     groupPos: Point;
     targetVertexX: number;
 }
 
 interface NeighborGroupContainerProps extends NeighborGroupContainerInputProps {
     // mapped properties
-    maxDisplayItems: number;
     labelJustification: LabelJustification;
     enableScrollUp: boolean;
     enableScrollDown: boolean;
-    connectionYOffset: number;
-    connectionXOffsetLeft: number;
-    connectionXOffsetRight: number;
-    arrowOffset: Point;
-
-    getAdjacentVertexId: (edge: Edge) => string;
-    findVertexById: (id: string) => Vertex;
 
     // callbacks
     onScrollUp: ActionFunctionAny<{}>;
@@ -68,9 +64,10 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
         }
         const idxEdge = this.props.currItem;
         const numEdges = this.props.edges.length;
-        const showEdgeScollButtons = (numEdges > this.props.maxDisplayItems);
-        const idxLastVisible = Math.min(idxEdge + this.props.maxDisplayItems, numEdges - 1);
-        const visibleEdges = this.props.edges.slice(idxEdge, idxEdge + this.props.maxDisplayItems);
+        const maxDisplayItems = this.props.settings.vertexColumnPageSize;
+        const showEdgeScollButtons = (numEdges > maxDisplayItems);
+        const idxLastVisible = Math.min(idxEdge + maxDisplayItems, numEdges - 1);
+        const visibleEdges = this.props.edges.slice(idxEdge, idxEdge + maxDisplayItems);
 
         let edgeStartX: number;
         let edgeEndX: number;
@@ -78,16 +75,18 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
         let scrollX: number;
         const relTargetVertexX = this.props.targetVertexX - this.props.groupPos.x + 1;
 
+        const connectionXOffsetLeft = this.props.offsets.connectionLeft.x;
+        const connectionXOffsetRight = this.props.offsets.connectionRight.x;
         if (this.props.edgeDirection === IncidentEdgeDirection.Incoming) {
-            edgeStartX = this.props.connectionXOffsetRight;
-            edgeEndX = relTargetVertexX + this.props.connectionXOffsetLeft;
+            edgeStartX = connectionXOffsetRight;
+            edgeEndX = relTargetVertexX + connectionXOffsetLeft;
             arrowIndicatorXPos = edgeStartX + (
-                relTargetVertexX + this.props.connectionXOffsetLeft - edgeStartX
+                relTargetVertexX + connectionXOffsetLeft - edgeStartX
             ) * 5 / 6;
             scrollX = 0;
         } else {
-            edgeStartX = relTargetVertexX + this.props.connectionXOffsetRight;
-            edgeEndX = this.props.connectionXOffsetRight;
+            edgeStartX = relTargetVertexX + connectionXOffsetRight;
+            edgeEndX = connectionXOffsetRight;
             arrowIndicatorXPos = edgeStartX + (
                 edgeEndX - edgeStartX
             ) / 6;
@@ -95,8 +94,8 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
             scrollX = edgeStartX + (edgeEndX - edgeStartX) * 2 / 3;
         }
 
-        const arrowIndicatorYPos = this.props.connectionYOffset +
-            SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;
+        const connectionYOffset = this.props.offsets.connectionLeft.y;
+        const arrowIndicatorYPos = connectionYOffset + SvgStyles.getStyles('edgeLine').strokeWidth / 2.0;
 
         return (
             <g transform={`translate(${this.props.groupPos.x} ${this.props.groupPos.y})`}>
@@ -123,15 +122,16 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
                 )}
                 <g>
                     {visibleEdges.map((edge: Edge, idxNodeObject: number) => {
-                        const vertexId = this.props.getAdjacentVertexId(edge);
-                        const vertex = this.props.findVertexById(vertexId);
+                        const vertexId = (this.props.edgeDirection === IncidentEdgeDirection.Incoming) ?
+                            edge.source : edge.dest;
+                        const vertex = this.props.graph.findVertexById(vertexId);
                         const nodeYPosition = idxNodeObject * this.nodeNeight;
 
-                        let edgeStartY = this.props.connectionYOffset;
+                        let edgeStartY = connectionYOffset;
                         if (this.props.edgeDirection === IncidentEdgeDirection.Incoming) {
                             edgeStartY += nodeYPosition;
                         }
-                        let edgeEndY = this.props.connectionYOffset;
+                        let edgeEndY = connectionYOffset;
                         if (this.props.edgeDirection === IncidentEdgeDirection.Outgoing) {
                             edgeEndY += nodeYPosition;
                         }
@@ -150,6 +150,7 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
                                 neighborType={this.props.edgeDirection}
                                 x={0}
                                 y={nodeYPosition}
+                                labelAnchor={this.props.offsets.vertexLabel}
                             />
                         ]);
                     })}
@@ -157,8 +158,8 @@ class NeighborGroupContainer extends React.Component<NeighborGroupContainerProps
                 <EdgeDirectionIndicatorObject
                     position={
                         {
-                            x: arrowIndicatorXPos + this.props.arrowOffset.x,
-                            y: arrowIndicatorYPos + this.props.arrowOffset.y
+                            x: arrowIndicatorXPos + this.props.offsets.arrow.x,
+                            y: arrowIndicatorYPos + this.props.offsets.arrow.y
                         }
                     }
                 />
@@ -180,23 +181,12 @@ function mapStateToProps(state: GlobalState, ownProps: NeighborGroupContainerInp
         LabelJustification.Left : LabelJustification.Right;
     const idxStartVertex = ownProps.edgeDirection === IncidentEdgeDirection.Incoming ?
         graphState.currItemIncoming : graphState.currItemOutgoing;
-    const arrowImageMetaData = graphState.images['arrow.svg'];
 
     return {
+        ...ownProps,
         labelJustification,
-        maxDisplayItems: graphState.vertexColumnPageSize,
         enableScrollUp: idxStartVertex > 0,
-        enableScrollDown: (idxStartVertex + graphState.vertexColumnPageSize) < ownProps.edges.length,
-        connectionYOffset: graphState.connectionYOffset,
-        connectionXOffsetLeft: graphState.connectionXOffsetLeft,
-        connectionXOffsetRight: graphState.connectionXOffsetRight,
-        arrowOffset: {
-            x: -0.5 * (arrowImageMetaData.width + 1),
-            y: -0.5 * (arrowImageMetaData.height + 1)
-        },
-
-        findVertexById: graphState.findVertexById,
-        getAdjacentVertexId: (edge: Edge) => graphState.getAdjacentVertexIdFromEdge(edge, ownProps.edgeDirection),
+        enableScrollDown: (idxStartVertex + ownProps.settings.vertexColumnPageSize) < ownProps.edges.length,
     };
 }
 
@@ -204,9 +194,14 @@ function mapStateToProps(state: GlobalState, ownProps: NeighborGroupContainerInp
 const gActions = graphActions.graph as any;
 
 function mapDispatchToProps(dispatch: Dispatch<GlobalState>, ownProps: NeighborGroupContainerInputProps) {
+    const commonArgs = [
+        ownProps.edges.length,
+        ownProps.settings.vertexColumnPageSize,
+    ];
+
     return bindActionCreators({
-        onScrollUp: () => gActions.scrollColumn(ScrollDirection.Up, ownProps.edgeDirection, ownProps.edges.length),
-        onScrollDown: () => gActions.scrollColumn(ScrollDirection.Down, ownProps.edgeDirection, ownProps.edges.length),
+        onScrollUp: () => gActions.scrollColumn(ScrollDirection.Up, ownProps.edgeDirection, ...commonArgs),
+        onScrollDown: () => gActions.scrollColumn(ScrollDirection.Down, ownProps.edgeDirection, ...commonArgs),
     }, dispatch);
 }
 

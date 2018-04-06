@@ -8,6 +8,7 @@
       "es5",
       "es2015"
     ],
+    "noUnusedLocals": true,
     "outDir": "build/ts",
     "strict": true,
     "target": "es5"

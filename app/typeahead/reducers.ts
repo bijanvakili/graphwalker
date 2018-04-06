@@ -2,13 +2,8 @@ import * as _ from 'lodash';
 import {AnyAction} from 'redux';
 import {handleActions, ReducerMap} from 'redux-actions';
 
-import {findVertexById} from '../root/selectors';
 import {TypeAheadSelectDirection} from './actions';
 import {TypeAheadState} from './models';
-import {typeaheadSearch} from './selectors';
-
-const MIN_QUERY_LENGTH = 2;
-const MAX_ITEM_RESULTS = 6;
 
 export default function makeTypeAheadReducer() {
     const typeAheadParamDefaults = {
@@ -19,13 +14,6 @@ export default function makeTypeAheadReducer() {
 
     return handleActions({
         ROOT: {
-            ALL_DATA_LOADED: (state: TypeAheadState, action: AnyAction) => ({
-                ...state,
-                utils: {
-                    findVertex: (vertexId: string) => findVertexById(action.payload.graph, vertexId),
-                    queryTypeahead: (query: string) => typeaheadSearch(action.payload.graph, query),
-                }
-            }),
             ON_VERTEX_SELECTED: (state: TypeAheadState, action: AnyAction) => {
                 // reset the state
                 return {...state, ...typeAheadParamDefaults};
@@ -55,16 +43,11 @@ export default function makeTypeAheadReducer() {
                 }
             },
             QUERY: (state: TypeAheadState, action: AnyAction) => {
-                const query = action.payload.query;
-                if (!query || query.length < MIN_QUERY_LENGTH) {
-                    return state;
-                }
-                if (!state.utils) {
-                    throw new Error('TYPEAHEAD.QUERY called before ROOT.ALL_DATA_LOADED');
-                }
-
-                const results = state.utils.queryTypeahead(query).slice(0, MAX_ITEM_RESULTS) || [];
-                return {...state, query, results};
+                return {
+                    ...state,
+                    query: action.payload.query,
+                    results: action.payload.results,
+                };
             },
             RESET: (state: TypeAheadState, action: AnyAction) => ({...state, ...typeAheadParamDefaults}),
         }

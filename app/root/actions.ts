@@ -3,15 +3,12 @@ import {Dispatch} from 'redux';
 import {createActions} from 'redux-actions';
 
 import {GlobalState} from './models/GlobalState';
-import {Graph} from './models/Graph';
-import {Settings} from './models/Settings';
-import {TextDimensionsFunction} from './models/UI';
+import {GraphData} from './models/Graph';
 
 const actionMap = createActions({
     ROOT: {
         ERROR: (err: Error) => ({error: true, payload: err}),
-        OFFSCREEN_UTILS_LOADED: (getTextDimensions: TextDimensionsFunction) => ({getTextDimensions}),
-        ALL_DATA_LOADED: (settings: Settings, graph: Graph) => ({settings, graph}),
+        ON_GRAPH_DATA_LOADED: (graphData: GraphData) => ({graphData}),
         ON_VERTEX_SELECTED: (vertexId: string) => ({vertexId}),
    }
 });

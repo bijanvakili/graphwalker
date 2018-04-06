@@ -7,17 +7,15 @@ import { applyMiddleware, compose, createStore, Store } from 'redux';
 import thunk from 'redux-thunk';
 
 import {UnrestrictedDictionary} from '../../common/ObjectTypes';
-import actions from '../actions';
-import {GlobalState} from '../models/GlobalState';
-import makeRootReducer from '../reducers';
-
-import {fetchGraph, fetchSettings} from '../api';
-
 import ErrorViewContainer from '../../error_view/containers';
 import LocalViewContainer from '../../graph_view/containers/LocalViewContainer';
-import TypeAheadResultsContainer from '../../typeahead/containers/TypeAheadResultsContainer';
-import TypeAheadTextEntryContainer from '../../typeahead/containers/TypeAheadTextEntryContainer';
-import OffscreenUtilsContainer from './OffscreenUtilsContainer';
+import TypeAheadContainer from '../../typeahead/containers/TypeAheadContainer';
+import actions from '../actions';
+import {fetchGraphData, fetchSettings} from '../api';
+import {TextMeasure, TextMeasureComponent} from '../components/TextMeasureComponent';
+import {GlobalState} from '../models/GlobalState';
+import {Settings} from '../models/Settings';
+import makeRootReducer from '../reducers';
 import VertexDispatchContainer from './VertexDispatchContainer';
 
 type Window = UnrestrictedDictionary;
@@ -29,9 +27,14 @@ export interface AppContainerProps {
     framework: string;
 }
 
-export class AppContainer extends React.Component<AppContainerProps, GlobalState> {
+interface AppContainerState {
+    settings: Settings;
+}
+
+export class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
     private store: Store<GlobalState>;
     private history: History;
+    private textMeasure: TextMeasure;
 
     public componentWillMount() {
         this.history = createHashHistory();
@@ -40,31 +43,39 @@ export class AppContainer extends React.Component<AppContainerProps, GlobalState
             makeRootReducer(),
             compose(applyMiddleware(...middleWare), enhanceStoreDevTools(window))
         ) as Store<GlobalState>;
+        this.textMeasure = new TextMeasure();
     }
 
     public render() {
+        const settings = this.state && this.state.settings;
+
         return (
             <Provider store={ this.store }>
                 <ConnectedRouter history={this.history}>
                     <div>
                         <div className="hud-view">
-                            <div className="typeahead-container">
-                                <TypeAheadTextEntryContainer />
-                                <TypeAheadResultsContainer />
-                            </div>
-                            <div className="error-container">
-                                <ErrorViewContainer />
-                            </div>
+                            <TypeAheadContainer/>
+                            <ErrorViewContainer />
                         </div>
 
                         <div className="main-view">
                             <div className="walker-container">
                                 <Route path="/vertex/:vertexId" component={VertexDispatchContainer} />
-                                <LocalViewContainer />
+                                {settings && this.textMeasure.isReady() && (
+                                    <LocalViewContainer
+                                        settings={settings}
+                                        textMeasure={this.textMeasure}
+                                    />
+                                )}
                             </div>
                         </div>
 
-                        <OffscreenUtilsContainer />
+                        <div className="offscreen">
+                            <TextMeasureComponent
+                                textMeasure={this.textMeasure}
+                                width={window.innerWidth}
+                            />
+                        </div>
                     </div>
                 </ConnectedRouter>
             </Provider>
@@ -79,9 +90,12 @@ export class AppContainer extends React.Component<AppContainerProps, GlobalState
             try {
                 // TODO add action for progress indicator
                 const settings = await fetchSettings();
-                const graph  = await fetchGraph(settings.graph.url);
-
-                dispatch(rootActions.allDataLoaded(settings, graph));
+                const graphData  = await fetchGraphData(settings.graph.url);
+                dispatch(rootActions.onGraphDataLoaded(graphData));
+                this.setState((prevState, props) => ({
+                    ...prevState,
+                    settings,
+                }));
 
                 // route to start vertex if the router did not already select one
                 const graphState = this.store.getState().graphState;

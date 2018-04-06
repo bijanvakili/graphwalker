@@ -1,7 +1,6 @@
 import 'whatwg-fetch';
 
-import {UnrestrictedDictionary} from '../common/ObjectTypes';
-import {Graph} from './models/Graph';
+import {GraphData} from './models/Graph';
 import {Settings} from './models/Settings';
 
 async function fetchJson(url: string): Promise<any> {
@@ -18,6 +17,6 @@ export function fetchSettings(): Promise<Settings>
     return fetchJson('data/config.json') as Promise<Settings>;
 }
 
-export function fetchGraph(urlGraph: string): Promise<Graph> {
-    return fetchJson(urlGraph) as Promise<Graph>;
+export function fetchGraphData(urlGraph: string): Promise<GraphData> {
+    return fetchJson(urlGraph) as Promise<GraphData>;
 }

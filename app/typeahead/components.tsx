@@ -67,6 +67,7 @@ export class ResultItemComponent extends React.Component<ItemProps> {
     public render() {
         return (
             <div
+                // TODO use classnames library
                 className={'typeahead-results-item' + (this.props.data.isSelected ? ' active' : '')}
                 onClick={this.props.callbacks.onClick}
             >

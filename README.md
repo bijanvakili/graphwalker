@@ -2,6 +2,8 @@
 
 Provides graphs that you can read!
 
+![graphwalker screenshot](../docs/graphwalker_screenshot.png)
+
 ## Introduction
 
 Graphs are are a critical abstract data type underlying much of mathematics and computer science. They provide

@@ -1,141 +1,163 @@
-import * as path from 'path';
-import * as process from 'process';
-
 import * as webpack from 'webpack';
-/* tslint:disable:no-var-requires */
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-/* tslint:enable:no-var-requires */
+import * as _ from 'lodash';
+import miniCssExtractPlugin from 'mini-css-extract-plugin';
+const TerserJSPlugin = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+import path from 'path';
+
+const packagesJson = require('./package.json');
+const vendorExclusions = ['bootstrap-css-only'];
+const vendorPackageNames = _.chain(packagesJson.dependencies)
+  .keys()
+  .difference(vendorExclusions)
+  .value();
 
 const isProduction = process.env.NODE_ENV === 'production';
-const buildDirectory = path.resolve(__dirname, 'build');
-
-const defaultOptions = {
-    devtool: (isProduction ? 'source-map' : 'inline-source-map') as webpack.Options.Devtool,
+const defaultOptions: Partial<webpack.Configuration> = {
+  devtool: isProduction ? 'source-map' : 'inline-source-map',
+  performance: {
+    hints: isProduction ? 'warning' : false
+  },
+  mode: isProduction ? 'production' : 'development'
 };
-
-const defaultPlugins = [
-    new ExtractTextPlugin('styles-[name].css')
-];
 if (isProduction) {
-    defaultPlugins.push(new UglifyJSPlugin({ sourceMap: true }));
+  defaultOptions.optimization = {
+    minimizer: [new TerserJSPlugin({ sourceMap: true }), new OptimizeCSSAssetsPlugin({ sourceMap: true })]
+  };
 }
 
+const outputDirectory = path.join(__dirname, 'dist');
+const vendorLibrariesDirectory = path.join(__dirname, 'node_modules');
 const defaultOutputOptions = {
-    filename: 'bundle-[name].js',
-    path: buildDirectory,
+  filename: 'bundle-[name].js'
 };
-
 const defaultRules = [
-    {
-        // All files with a '.css' extension will be handled by
-        // 'extract-text-webpack-plugin, css-loader and style-loader'.
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [
-                { loader: 'css-loader', options: { minimize: isProduction } }
-            ],
-        })
-    }
+  // stylesheets
+  {
+    test: /\.(css|less)$/i,
+    use: [
+      {
+        loader: miniCssExtractPlugin.loader,
+        options: {
+          hmr: !isProduction
+        }
+      },
+      {
+        loader: 'css-loader',
+        options: {
+          sourceMap: true,
+          importLoaders: 1
+        }
+      },
+      {
+        loader: 'less-loader',
+        options: {
+          sourceMap: true,
+          strictMath: true
+        }
+      }
+    ]
+  }
+];
+const defaultPlugins = [
+  new miniCssExtractPlugin({
+    filename: 'bundle-[name].css',
+    chunkFilename: isProduction ? '[id].[hash].css' : '[id].css'
+  })
 ];
 
-// Bug in @types/webpack with fix implemented here:
-// https://github.com/DefinitelyTyped/DefinitelyTyped/pull/18902
-//
-// webpack documentation needs to be clarified as per this issue:
-// https://github.com/webpack/webpack.js.org/issues/1513
-const referencePluginOptions: webpack.DllReferencePlugin.Options = {
-    context: __dirname,
-    name: 'vendor',
-    manifest: path.join(__dirname, 'build', 'vendor-manifest.json') as any
-} as webpack.DllReferencePlugin.Options;
+const config = [
+  // vendor bundle
+  {
+    ...defaultOptions,
 
-const config: webpack.Configuration[] = [
-    {
-        ...defaultOptions,
-        name: 'vendor',
-        entry: {
-            vendor: [
-                'history',
-                'lodash',
-                'purecss',
-                'react',
-                'react-dom',
-                'react-redux',
-                'react-router',
-                'react-router-redux',
-                'redux',
-                'redux-actions',
-                'redux-thunk',
-                'whatwg-fetch',
-            ]
-        },
-        output: {
-            ...defaultOutputOptions,
-            library: 'vendor'
-        },
-        module: {
-            rules: defaultRules
-        },
-        plugins: [
-            new webpack.DllPlugin({
-                context: __dirname,
-                name: '[name]',
-                path: path.join(__dirname, 'build', '[name]-manifest.json')
-            }),
-            ...defaultPlugins
-        ]
+    // NOTE: webpack-dev-server parameters must stay within the first entry in the config array
+    devServer: {
+      contentBase: __dirname,
+      port: 9080
     },
-    {
-        ...defaultOptions,
-        name: 'app',
-        devServer: {
-            contentBase: __dirname
+
+    name: 'vendor',
+
+    entry: {
+      vendor: vendorPackageNames
+    },
+    output: {
+      ...defaultOutputOptions,
+      library: 'vendor'
+    },
+    module: {
+      rules: defaultRules
+    },
+    plugins: [
+      ...defaultPlugins,
+      new webpack.DllPlugin({
+        context: __dirname,
+        name: '[name]',
+        path: path.join(outputDirectory, '[name]-manifest.json')
+      })
+    ]
+  },
+  // application bundle
+  {
+    ...defaultOptions,
+
+    name: 'app',
+
+    entry: {
+      app: './src/index.tsx',
+      boostrap: [path.resolve(vendorLibrariesDirectory, 'bootstrap-css-only/css/bootstrap.css')]
+    },
+    resolve: {
+      alias: {
+        images: path.resolve(__dirname, 'images')
+      },
+      extensions: ['.ts', '.tsx', '.js', '.css', '.less']
+    },
+
+    plugins: [
+      ...defaultPlugins,
+      new webpack.DllReferencePlugin({
+        context: __dirname,
+        name: 'vendor',
+        manifest: path.join(outputDirectory, 'vendor-manifest.json')
+      }),
+      new webpack.WatchIgnorePlugin([vendorLibrariesDirectory, path.join(__dirname, 'dist')])
+    ],
+
+    output: defaultOutputOptions,
+
+    module: {
+      rules: [
+        ...defaultRules,
+        {
+          test: /\.ts(x?)$/,
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: 'ts-loader'
+            }
+          ]
         },
-        entry: {
-            app: [
-                './app/main.tsx',
-                './app/css/graph.css',
-            ]
+        // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+        {
+          enforce: 'pre',
+          test: /\.js$/,
+          loader: 'source-map-loader'
         },
-        output: defaultOutputOptions,
-        module: {
-            rules: [
-                ...defaultRules,
-                {
-                    // All files with a '.ts' extension will be handled by 'awesome-typescript-loader'.
-                    test: /\.tsx?$/,
-                    loader: 'awesome-typescript-loader'
-                },
-                {
-                    // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-                    enforce: 'pre',
-                    test: /\.js$/,
-                    loader: 'source-map-loader'
-                }
-            ]
-        },
-        plugins: [
-            new webpack.DllReferencePlugin(referencePluginOptions),
-            // Bug in @types/webpack with fix implemented here:
-            // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/19013
-            //
-            // For now, we use an array of RegExp instances
-            new webpack.WatchIgnorePlugin([
-                /node_modules/,
-                /build/,
-                /dist/
-            ]),
-            ...defaultPlugins
-        ],
-        resolve: {
-            alias: {
-                app: path.resolve(__dirname, 'app')
-            },
-            extensions: ['.ts', '.tsx', '.js']
+        // All .svg files should be included separately without bundling
+        {
+          test: /\.svg$/,
+          loader: 'file-loader',
+          options: {
+            emitFile: true,
+            outputPath: 'images',
+            name: '[name].[ext]'
+          }
         }
+      ]
     }
+  }
 ];
 
 export default config;

@@ -1,16 +1,22 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {},
-    "rules": {
-        "interface-name": [false],
-        "quotemark": [true, "single", "avoid-escape", "jsx-double"],
-        "max-classes-per-file": [false],
-        "object-literal-sort-keys": false,
-        "one-line": [false],
-        "trailing-comma": false
-    },
-    "rulesDirectory": []
+  "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier", "tslint-config-airbnb"],
+  "rules": {
+    "import-name": [true, { "lodash": "_" }],
+    "interface-name": [false],
+    "member-access": [true, "no-public"],
+    "max-classes-per-file": false,
+    "max-line-length": [true, 110],
+    "object-literal-sort-keys": false,
+    "ordered-imports": [false],
+    "no-var-requires": [false],
+    "variable-name": [true, "ban-keywords"],
+    "jsx-no-lambda": false,
+
+    "no-boolean-literal-compare": false,
+    "trailing-comma": [false]
+  },
+  "linterOptions": {
+    "exclude": ["node_module/**"],
+    "format": "verbose"
+  }
 }

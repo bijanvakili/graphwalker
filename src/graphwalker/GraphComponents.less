@@ -1,0 +1,49 @@
+@vertex-text-height: 14;
+@edge-textheight: 12;
+
+.justify-mixin() {
+  &.left {
+    text-anchor: start;
+  }
+
+  &.center {
+    text-anchor: middle;
+  }
+
+  &.right {
+    text-anchor: end;
+  }
+}
+
+.graph {
+  &-root-container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+
+  &-vertex {
+    &-label {
+      .justify-mixin();
+      fill: blue;
+      font-family: Arial, sans-serif;
+      font-size: unit(@vertex-text-height, px);
+    }
+  }
+
+  &-edge {
+    &-line {
+      fill: none;
+      stroke: black;
+      stroke-width: 2;
+    }
+
+    &-label {
+      .justify-mixin();
+      font-family: arial;
+      fill: black;
+      font-size: unit(@edge-textheight, px);
+      font-style: italic;
+    }
+  }
+}

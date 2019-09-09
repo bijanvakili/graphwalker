@@ -2,7 +2,7 @@
 
 Provides graphs that you can read!
 
-![graphwalker screenshot](../docs/graphwalker_screenshot.png)
+![graphwalker screenshot](./docs/graphwalker_screenshot.png)
 
 ## Introduction
 

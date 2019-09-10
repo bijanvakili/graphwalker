@@ -1,7 +1,9 @@
 import * as _ from 'lodash';
+import { createSelector } from 'reselect';
 
 import { TypeAheadSelectDirection } from './constants';
 import { Vertex, Graph } from '../graphwalker/models/Graph';
+import { TypeAheadState } from './models';
 
 const MIN_QUERY_LENGTH = 2;
 const MAX_ITEM_RESULTS = 6;
@@ -24,9 +26,16 @@ export function nextSelection(
   return _.clamp(newSelection, 0, currentResults.length - 1);
 }
 
-export function querySubgraph(query: string, graph?: Graph) {
-  if (!graph || !query || query.length < MIN_QUERY_LENGTH) {
-    return [];
+// memoized selectors
+const getQuery = (state: TypeAheadState) => state.query;
+const getGraph = (state: TypeAheadState) => state.graph;
+export const getQueryResults = createSelector(
+  getQuery,
+  getGraph,
+  (query: string, graph?: Graph) => {
+    if (!graph || !query || query.length < MIN_QUERY_LENGTH) {
+      return [];
+    }
+    return graph.searchVertices(query).slice(0, MAX_ITEM_RESULTS) || [];
   }
-  return graph.searchVertices(query).slice(0, MAX_ITEM_RESULTS) || [];
-}
+);

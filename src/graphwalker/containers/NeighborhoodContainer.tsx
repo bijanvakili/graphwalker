@@ -10,6 +10,8 @@ import { selectVertex } from '../actions';
 import { Justification } from '../constants';
 import { SubgraphRenderComponent } from '../components/SubgraphRenderComponent';
 import { VertexSelectedCallback } from '../components/SubgraphRenderer';
+import { IncidentEdgeMetrics, IncidentEdgeFlags } from '../models/GraphViewState';
+import { getIncidentEdgeCounts } from '../selectors';
 
 import '../GraphComponents.less';
 
@@ -17,10 +19,8 @@ interface NeighborhoodContainerMappedProps {
   graph: Graph;
   settings: Settings;
   currentVertexId: string;
-  currentIncomingVertex: number;
-  currentOutgoingVertex: number;
-  showIncomingPaginator: boolean;
-  showOutgoingPaginator: boolean;
+  currentScrollPositions: IncidentEdgeMetrics;
+  showPaginator: IncidentEdgeFlags;
 }
 
 interface NeighborHoodContainerDispatchProps {
@@ -35,7 +35,7 @@ const NeighborhoodContainer: React.FC<NeighborhoodContainerProps> = (props: Neig
     <div className="container-fluid mt-3">
       <div className="row justify-content-between">
         <div className="col-2">
-          {props.showIncomingPaginator && (
+          {props.showPaginator.incoming && (
             <VertexPaginatorContainer
               justification={Justification.Left}
               vertexType={IncidentEdgeDirection.Incoming}
@@ -43,7 +43,7 @@ const NeighborhoodContainer: React.FC<NeighborhoodContainerProps> = (props: Neig
           )}
         </div>
         <div className="col-2">
-          {props.showOutgoingPaginator && (
+          {props.showPaginator.outgoing && (
             <VertexPaginatorContainer
               justification={Justification.Right}
               vertexType={IncidentEdgeDirection.Outgoing}
@@ -55,8 +55,8 @@ const NeighborhoodContainer: React.FC<NeighborhoodContainerProps> = (props: Neig
         graph={props.graph}
         settings={props.settings}
         currentVertexId={props.currentVertexId}
-        currentIncomingVertex={props.currentIncomingVertex}
-        currentOutgoingVertex={props.currentOutgoingVertex}
+        currentIncomingVertex={props.currentScrollPositions.incoming}
+        currentOutgoingVertex={props.currentScrollPositions.outgoing}
         selectVertex={props.selectVertex}
       />
     </div>
@@ -65,16 +65,18 @@ const NeighborhoodContainer: React.FC<NeighborhoodContainerProps> = (props: Neig
 
 function mapStateToProps(state: GlobalState) {
   const settings = state.graphView.settings;
-  const { graph, currentVertexId, currentIncomingVertex, currentOutgoingVertex } = state.graphView;
+  const { graph, currentVertexId, currentScrollPositions } = state.graphView;
+  const edgeCounts = getIncidentEdgeCounts(state.graphView);
   if (settings && graph && currentVertexId) {
     return {
       graph,
       settings,
       currentVertexId,
-      currentIncomingVertex,
-      currentOutgoingVertex,
-      showIncomingPaginator: state.graphView.totalIncomingVertices > settings.vertexColumnPageSize,
-      showOutgoingPaginator: state.graphView.totalOutgoingVertices > settings.vertexColumnPageSize
+      currentScrollPositions,
+      showPaginator: {
+        incoming: edgeCounts.incoming > settings.vertexColumnPageSize,
+        outgoing: edgeCounts.outgoing > settings.vertexColumnPageSize
+      }
     };
   }
 }

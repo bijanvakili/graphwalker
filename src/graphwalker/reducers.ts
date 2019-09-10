@@ -4,15 +4,15 @@ import * as actions from './actions';
 
 import { errorViewReducer } from '../errorview/reducers';
 import { typeAheadReducer } from '../typeahead/reducers';
-import { GraphViewState } from './models/GraphViewState';
-import { getNextScrollPositions, getIncidentEdgeCount } from './selectors';
 import { IncidentEdgeDirection } from './models/Graph';
+import { GraphViewState } from './models/GraphViewState';
+import { getNextScrollPositions } from './selectors';
 
 const graphViewReducer = createReducer<GraphViewState>({
-  currentIncomingVertex: 0,
-  currentOutgoingVertex: 0,
-  totalIncomingVertices: 0,
-  totalOutgoingVertices: 0
+  currentScrollPositions: {
+    [IncidentEdgeDirection.Incoming]: 0,
+    [IncidentEdgeDirection.Outgoing]: 0
+  }
 })
   .handleAction(actions.onSettingsLoaded, (state, action) => ({
     ...state,
@@ -30,19 +30,19 @@ const graphViewReducer = createReducer<GraphViewState>({
     return {
       ...state,
       currentVertexId: action.payload,
-      currentIncomingVertex: 0,
-      currentOutgoingVertex: 0,
-      totalIncomingVertices: getIncidentEdgeCount(
-        state.graph,
-        action.payload,
-        IncidentEdgeDirection.Incoming
-      ),
-      totalOutgoingVertices: getIncidentEdgeCount(state.graph, action.payload, IncidentEdgeDirection.Outgoing)
+      currentScrollPositions: {
+        [IncidentEdgeDirection.Incoming]: 0,
+        [IncidentEdgeDirection.Outgoing]: 0
+      }
     };
   })
   .handleAction(actions.onScrollVertices, (state, action) => ({
     ...state,
-    ...getNextScrollPositions(state, action.payload.groupType, action.payload.scrollDirection)
+    currentScrollPositions: getNextScrollPositions(
+      state,
+      action.payload.groupType,
+      action.payload.scrollDirection
+    )
   }));
 
 export const mainReducer = combineReducers({

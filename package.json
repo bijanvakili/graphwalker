@@ -19,6 +19,7 @@
     "react-redux": "^7.1.0",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
+    "reselect": "^4.0.0",
     "typesafe-actions": "^4.4.2",
     "whatwg-fetch": "^3.0.0"
   },

@@ -2,12 +2,14 @@ import classnames from 'classnames';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
+import { getQueryResults } from '../selectors';
 import { ResultItemComponent } from '../components/ResultItemComponent';
 import { ElementMouseEvent } from '../../types/EventTypes';
 import { selectVertex } from '../../graphwalker/actions';
 import { GlobalState } from '../../graphwalker/reducers';
 
 import '../TypeAhead.less';
+import { Vertex } from '../../graphwalker/models/Graph';
 
 interface ResultItemData {
   displayName: string;
@@ -48,9 +50,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = (props: ResultsContain
 
 const mapStateToProps = (state: GlobalState) => {
   return {
-    results: state.typeahead.results.map((v) => {
-      return { displayName: v.label, vertexId: v.id };
-    }),
+    results: getQueryResults(state.typeahead).map((v: Vertex) => ({ displayName: v.label, vertexId: v.id })),
     currentSelection: state.typeahead.currentSelection
   };
 };

@@ -3,20 +3,25 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { GlobalState } from '../../graphwalker/reducers';
-import { InputClipboardEvent, InputKeyboardEvent, InputKeyboardEventHandler } from '../../types/EventTypes';
-import { moveSelection, query, reset, submit } from '../actions';
+import { InputClipboardEvent, InputKeyboardEvent } from '../../types/EventTypes';
+import { moveSelection, query, reset } from '../actions';
+import { selectVertex } from '../../graphwalker/actions';
 import { TypeAheadSelectDirection } from '../constants';
+import { getQueryResults } from '../selectors';
 import { TextEntryComponent } from '../components/TextEntryComponent';
+import { Vertex } from '../../graphwalker/models/Graph';
 
 interface TextEntryContainerMappedProps {
   query: string;
+  results: Vertex[];
+  currentSelection?: number;
 }
 
 interface TextEntryContainerDispatchProps {
   moveSelection: (direction: TypeAheadSelectDirection) => void;
   onQuery: (inputValue: string) => void;
   reset: () => void;
-  submit: () => void;
+  selectVertex: (vertexId: string) => void;
 }
 
 type TextEntryContainerProps = TextEntryContainerMappedProps & TextEntryContainerDispatchProps;
@@ -49,6 +54,18 @@ function useDebouncedKeyboardCallback(handler: KeyHandler, wait: number, deps: a
 // TODO add visible disable styles when switching out of the view
 
 const TextEntryContainer: React.FC<TextEntryContainerProps> = (props: TextEntryContainerProps) => {
+  const onSubmit = React.useCallback(() => {
+    const { currentSelection, results } = props;
+
+    if (currentSelection === undefined) {
+      return;
+    }
+
+    const vertexId = results[currentSelection].id;
+    props.selectVertex(vertexId);
+    // tslint:disable:align
+  }, [props.currentSelection, props.results, props.selectVertex]);
+
   const onKeyUp = useDebouncedKeyboardCallback(
     (key: string, inputValue: string) => {
       // TODO: Switch to Array.includes() if upgrading to ES7 (es2016.array.include)
@@ -73,12 +90,12 @@ const TextEntryContainer: React.FC<TextEntryContainerProps> = (props: TextEntryC
           props.reset();
           return;
         case 'Enter':
-          props.submit();
+          onSubmit();
           return;
       }
     },
     0,
-    [props.moveSelection, props.reset, props.submit]
+    [props.moveSelection, props.reset, onSubmit]
   );
 
   const onClipboard = React.useMemo(() => (e: InputClipboardEvent) => props.onQuery(e.currentTarget.value), [
@@ -97,10 +114,12 @@ const TextEntryContainer: React.FC<TextEntryContainerProps> = (props: TextEntryC
 };
 
 const mapStateToProps = (state: GlobalState) => ({
-  query: state.typeahead.query
+  currentSelection: state.typeahead.currentSelection,
+  query: state.typeahead.query,
+  results: getQueryResults(state.typeahead)
 });
 
 export default connect(
   mapStateToProps,
-  { moveSelection, reset, submit, onQuery: query }
+  { moveSelection, reset, selectVertex, onQuery: query }
 )(TextEntryContainer);

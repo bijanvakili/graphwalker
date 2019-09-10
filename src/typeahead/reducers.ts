@@ -3,7 +3,7 @@ import { createReducer } from 'typesafe-actions';
 import * as typeAheadActions from './actions';
 import * as graphWalkerActions from '../graphwalker/actions';
 import { TypeAheadState } from './models';
-import { nextSelection, querySubgraph } from './selectors';
+import { nextSelection, getQueryResults } from './selectors';
 
 const typeAheadParamDefaults = {
   query: '',
@@ -22,14 +22,13 @@ export const typeAheadReducer = createReducer<TypeAheadState>(typeAheadParamDefa
   // update the current selection if the user moves up or down
   .handleAction(typeAheadActions.moveSelection, (state, action) => ({
     ...state,
-    currentSelection: nextSelection(state.results, action.payload, state.currentSelection)
+    currentSelection: nextSelection(getQueryResults(state), action.payload, state.currentSelection)
   }))
   // get new query results
   .handleAction(typeAheadActions.query, (state, action) => {
     return {
       ...state,
-      query: action.payload,
-      results: querySubgraph(action.payload as string, state.graph)
+      query: action.payload
     };
   })
   // reset everything except the graph when the typeahead is reset

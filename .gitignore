@@ -7,3 +7,5 @@ npm-debug.log
 .idea/
 .DS_Store
 .nvmrc
+.vscode/
+yarn-error.log

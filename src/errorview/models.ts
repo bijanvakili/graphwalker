@@ -1,4 +1,4 @@
 export interface ErrorSummary {
-  message: string;
+  error: Error;
   componentStack?: string;
 }

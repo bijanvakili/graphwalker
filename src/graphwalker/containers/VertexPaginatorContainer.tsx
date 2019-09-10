@@ -33,15 +33,10 @@ const VertexPaginatorContainer: React.FC<VertexPaginatorContainerProps> = (
 ) => <VertexPaginatorComponent {...props} />;
 
 function mapStateToProps(state: GlobalState, ownProps: VertexPaginatorContainerOwnProps) {
-  const currentVertexIndex =
-    ownProps.vertexType === IncidentEdgeDirection.Incoming
-      ? state.graphView.currentIncomingVertex
-      : state.graphView.currentOutgoingVertex;
-
   return {
-    isUpEnabled: currentVertexIndex > 0,
-    isDownEnabled: canScrollDown(state.graphView, ownProps.vertexType, currentVertexIndex),
-    summary: getVertexPageSummary(state.graphView, ownProps.vertexType)
+    isUpEnabled: state.graphView.currentScrollPositions[ownProps.vertexType] > 0,
+    isDownEnabled: canScrollDown(state.graphView)[ownProps.vertexType],
+    summary: getVertexPageSummary(state.graphView)[ownProps.vertexType]
   };
 }
 

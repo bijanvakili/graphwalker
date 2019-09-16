@@ -1,5 +1,5 @@
 {
-  "name": "g2",
+  "name": "graphwalker",
   "version": "00.00.05",
   "description": "Graph traversal tool for the web browser",
   "main": "index.html",

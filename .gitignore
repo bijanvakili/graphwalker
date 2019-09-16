@@ -9,3 +9,4 @@ npm-debug.log
 .nvmrc
 .vscode/
 yarn-error.log
+docs/notes.*

@@ -1,23 +1,20 @@
-version: '2'
+version: "3"
+services:
+  # graph database using Cayley
+  db:
+    image: cayleygraph/cayley:v0.7.6
+    volumes:
+      - "db:/data"
+      - "./data:/import"
+      - "./etc/cayley.json:/etc/cayley.json"
+    ports:
+      - 64210:64210
+
+  # shell container to inspect volumes
+  shell:
+    image: busybox:1.31
+    volumes:
+      - "db:/data"
 
 volumes:
-  node_modules:
-  build_output:
-
-services:
-  common:
-    build: .
-    volumes:
-        - ".:/usr/src/app"
-        - "node_modules:/usr/src/app/node_modules"
-        - "build_output:/usr/src/app/build"
-
-  web:
-    extends:
-      service: common
-    expose:
-      - 8080
-    ports:
-      - "8080:8080"
-      - "5858:5858"
-    command: yarn run docker_web
+  db:

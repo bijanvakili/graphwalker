@@ -1,7 +1,7 @@
-tmp/*
-node_modules/*
-dist/*
-build/*
+tmp/
+node_modules/
+dist/
+build/
 npm-debug.log
 .vagrant/
 .idea/
@@ -10,3 +10,7 @@ npm-debug.log
 .vscode/
 yarn-error.log
 docs/notes.*
+.tscache/
+import/
+src/server/graphwalker/
+src/client/graphwalker/models/Graphwalker.ts

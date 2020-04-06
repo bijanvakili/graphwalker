@@ -1,0 +1,50 @@
+# single vertex details
+type Vertex {
+  id: String! # hash ID
+  fullyQualifiedModelName: String!
+  modelName: String!
+}
+
+# single edge details
+type Edge {
+  id: String! # hash ID
+  # TODO convert to enum?
+  fieldType: String!
+
+  fieldName: String
+  multiplicity: String
+  label: String!
+}
+
+# grouping of a vertex connected to a target via an edge
+type AdjacentVertex {
+  other: Vertex!
+  edge: Edge!
+}
+
+type Neighborhood {
+  id: String! # same hash id as the vertex
+  vertex: Vertex
+  incoming: [AdjacentVertex]
+  outgoing: [AdjacentVertex]
+}
+
+type VertexImage {
+  name: String!
+  filename: String!
+  height: Int!
+  width: Int!
+}
+
+type RenderSettings {
+  startVertexId: String!
+  vertexColumnPageSize: Int!
+  images: [VertexImage!]
+}
+
+# read operations for this API
+type Query {
+  vertexMatch(textQuery: String!): [Vertex!]
+  neighborhood(id: String!): Neighborhood
+  settings: RenderSettings
+}

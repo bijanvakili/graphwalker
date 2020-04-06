@@ -1,0 +1,8 @@
+{
+  "startVertexId": "a5ad6ad053fdc1326224194fd397df196ca791d6",
+  "vertexColumnPageSize": 8,
+  "images": [
+    { "name": "arrow", "height": 32, "width": 32, "filename": "arrow.svg" },
+    { "name": "vertexIcon", "height": 16, "width": 16, "filename": "basic_node.svg" }
+  ]
+}

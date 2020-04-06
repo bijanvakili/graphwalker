@@ -1,0 +1,8 @@
+schema: ./src/server/graphwalker.graphql
+generates:
+  ./src/server/graphwalker/types.ts:
+    plugins:
+      - typescript
+  ./src/client/graphwalker/models/Graphwalker.ts:
+    plugins:
+      - typescript

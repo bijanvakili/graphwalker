@@ -26,33 +26,44 @@ them can be overwhelming.
 
 ## Graph Data
 
-You can quickly produce graphs by using these exporters for these well known applications:
+Currently, only the following project creates valid RDF graphs for this project:
 
-| Application                                      | Exporter                                                                        | Content                      | Platform |
-| :----------------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- | :------- |
-| [Airflow](https://airflow.incubator.apache.org/) | [graphwalker-airflow](https://github.com/bijanvakili/graphwalker-airflow)       | DAGs, tasks and dependencies | python   |
-| [Django](https://www.djangoproject.com/)         | [graphwalker-django](https://github.com/bijanvakili/graphwalker-django)         | ORM models and relationships | python   |
-| [SQLAlchemy](https://www.sqlalchemy.org/)        | [graphwalker-sqlalchemy](https://github.com/bijanvakili/graphwalker-sqlalchemy) | ORM models and relationships | python   |
-| [Sequelize](http://docs.sequelizejs.com/)        | [graphwalker-sequelize](https://github.com/bijanvakili/graphwalker-sequelize)   | ORM models and relationships | node.js  |
+- [django_codecrumb](https://github.com/bijanvakili/django-codecrumb)
 
-You can even write your own.
+All graph data is stored in Cayley DB. This project runs Cayley in a Docker container.
 
 ## Configuration
 
-Edit `data/config.json` to specify how to load your graph data
+Edit `etc/render_settings.json` to specify how to displays your graph data
 
 ```json
 {
-  "graph": {
-    "url": "your_graph.json",
-    "startVertexId": "<SHA1 vertex ID hash>"
-  },
+  "startVertexId": "<SHA1 vertex ID hash>",
   "vertexColumnPageSize": 8,
-  "images": { ... },
+  "images": [
+    ...
+  ]
 }
 ```
 
-The documentation on the JSON data format is [here](./docs/data_format.md).
+## Load Data
+
+NOTE: Database must be _shut down_.
+
+Copy your Cayley DB import file into the `./data` folder (e.g. `filename.nq.gz`) and
+run the following Docker command:
+
+```bash
+docker-compose run --rm --entrypoint "cayley load -i /import/filename.nq.gz" db
+```
+
+## Volume Inspection
+
+To or manipulate the Cayley DB files, run the following:
+
+```bash
+docker-compose run --rm shell
+```
 
 ## Running locally
 
@@ -67,25 +78,27 @@ Run the following to install all the necessary build dependencies using `yarn` a
 
     yarn install
 
-Run the following to build and bundle all Javascript code into the `./build` subdirectory using [`webpack`](https://webpack.github.io/).
+Run the following to build and bundle all Javascript code into the `./dist` subdirectory:
 
-    yarn run build
+    yarn run generate
+    yarn run build-server
+    yarn run build-client
 
-Run the following in a window to build in watch mode. This will automatically rebuild if you modify any source code.
-
-    yarn run watch
-
-NOTE: `build` must be executed at least once. `watch` will not rebuild 3rd party vendor code.
-
-### Running a Test server
-
-Run the following:
+Then run the following to run the web server:
 
     yarn run web
 
-Open the following URL in your web browser: [http://localhost:9080/index.html](http://localhost:8080/index.html)
+Finally, open the following URL in your web browser:
 
-NOTE: If you wish to do development while the web server is running, then run `yarn run watch` in a separate window.
+    open http://localhost:9080/
+
+### Running a Test server
+
+[tmux](https://github.com/tmux/tmux/wiki) is required to run a test server using watch mode on all source files:
+
+    ./scripts/tmux.sh
+
+This will run multiple watch windows for both client and server.
 
 ### Local Development
 
@@ -100,16 +113,3 @@ Set up the git pre-commit hook as follows:
 To remove build files, run the following:
 
     yarn run clean
-
-## Running with Docker
-
-It is recommended to start the development web server in the _foreground_ in a separate console session:
-
-    docker-compose up web
-
-This will allow you to see log output if there is a build error. However, if you wish to run it in the background
-and have no output:
-
-    docker-compose up -d web
-
-Open the following URL in your web browser: [http://localhost:9080/index.html](http://localhost:9080/index.html)

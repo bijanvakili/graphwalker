@@ -11,12 +11,19 @@
     "no-var-requires": [false],
     "variable-name": [true, "ban-keywords"],
     "jsx-no-lambda": false,
-
+    "quotemark": [true, "double", "jsx-double"],
     "no-boolean-literal-compare": false,
-    "trailing-comma": [false]
+    "trailing-comma": [false],
+    "ter-arrow-parens": [true]
   },
   "linterOptions": {
-    "exclude": ["node_module/**"],
+    "exclude": [
+      "node_modules/**",
+      "tmp/**",
+      "src/server/graphwalker/**",
+      "src/client/graphwalker/models/Graphwalker.ts"
+    ],
+    "include": ["*.ts", "src/**"],
     "format": "verbose"
   }
 }

@@ -9,6 +9,7 @@ const packagesJson = require("./package.json");
 const vendorExclusions = [
   "bootstrap-css-only",
   "apollo-server-express",
+  "apollo-server-plugin-response-cache",
   "body-parser",
   "express",
   "node-fetch",

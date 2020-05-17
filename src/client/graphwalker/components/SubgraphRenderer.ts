@@ -135,15 +135,14 @@ export class SubgraphRenderer {
       .attr("width", (img) => img.width)
       .attr("height", (img) => img.height);
 
-    // TODO see if we can remove '|| []'
     // filter incoming and outgoing vertices with pagination (offset and max size)
     const incomingAdjacencies = getPageSlice(
-      this.vertexNeighborhood.incoming || [],
+      this.vertexNeighborhood.incoming,
       neighborSelections.incoming,
       this.vertexColumnPageSize
     );
     const outgoingAdjacencies = getPageSlice(
-      this.vertexNeighborhood.outgoing || [],
+      this.vertexNeighborhood.outgoing,
       neighborSelections.outgoing,
       this.vertexColumnPageSize
     );
@@ -281,10 +280,6 @@ export class SubgraphRenderer {
    *  3) outgoing
    */
   private getGraphLayout(incoming: AdjacentVertex[], outgoing: AdjacentVertex[]): GraphLayout {
-    if (this.vertexNeighborhood.vertex === undefined || this.vertexNeighborhood.vertex === null) {
-      throw new Error("vertex not provided for neighborhood");
-    }
-
     const layout: GraphLayout = {
       vertices: [],
       edges: [],

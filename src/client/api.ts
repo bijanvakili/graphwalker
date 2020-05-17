@@ -96,9 +96,6 @@ async function queryGraphQL<TQueryArgs>(
 
 export async function getSettings(): Promise<RenderSettings> {
   const response = await queryGraphQL<{}>(QUERY_CLIENT_SETTINGS, {}, "Settings file");
-  if (!response.settings) {
-    throw new Error("settings not returned in response");
-  }
   return response.settings;
 }
 
@@ -108,9 +105,6 @@ export async function getVertexNeighborhood(id: string): Promise<Neighborhood> {
     { id },
     "Vertex neighborhood"
   );
-  if (!response.neighborhood) {
-    throw new Error("neighborhood not returned in response");
-  }
   return response.neighborhood;
 }
 
@@ -124,8 +118,5 @@ export async function findMatchingVertices(textQuery: string): Promise<Vertex[]>
     { textQuery },
     "Vertex match"
   );
-  if (!response.vertexMatch) {
-    throw new Error("no matches returned in response");
-  }
   return response.vertexMatch;
 }

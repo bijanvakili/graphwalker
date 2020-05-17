@@ -1,7 +1,9 @@
 import { readFile } from "fs";
 import { env } from "process";
 import { promisify } from "util";
+import { GraphQLResolveInfo } from "graphql";
 
+import { ResourceNotFoundError } from "./errors";
 import {
   Vertex,
   AdjacentVertex,
@@ -28,8 +30,14 @@ export default {
 
     neighborhood: (_: void, queryRequest: QueryNeighborhoodArgs): QueryNeighborhoodArgs => queryRequest,
 
-    settings: async (): Promise<RenderSettings> => {
-      // TODO add caching for read-only settings
+    settings: async (
+      parent: QueryNeighborhoodArgs,
+      _request: void,
+      context: AppContext,
+      info: GraphQLResolveInfo
+    ): Promise<RenderSettings> => {
+      info.cacheControl.setCacheHint({ maxAge: 3600 });
+
       const settingsFilename = env.GRAPHWALKER_RENDER_SETTINGS;
       if (!settingsFilename) {
         throw new Error("GRAPHWALKER_RENDER_SETTINGS not specified");
@@ -39,19 +47,14 @@ export default {
     },
   },
   Neighborhood: {
-    vertex: async (
-      parent: QueryNeighborhoodArgs,
-      _: void,
-      context: AppContext
-    ): Promise<Vertex | undefined> => {
+    vertex: async (parent: QueryNeighborhoodArgs, _: void, context: AppContext): Promise<Vertex> => {
       const query = getVertexByHashId(parent.id);
 
       const results = await context.dbClient.queryGizmo<Vertex>(query);
-
-      // TODO throw an exception if not found
-      if (results) {
-        return results[0];
+      if (!results) {
+        throw new ResourceNotFoundError(`Vertex not found: ${parent.id}`);
       }
+      return results[0];
     },
 
     incoming: async (

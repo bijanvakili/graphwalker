@@ -5,6 +5,7 @@ import { GlobalState } from "../graphwalker/reducers";
 import { Vertex } from "../graphwalker/models/Graphwalker";
 import { TypeAheadSelectDirection } from "./constants";
 import { findMatchingVertices } from "../api";
+import { onError as rootOnError } from "../errorview/actions";
 
 export const moveSelection = createStandardAction("typeahead/MOVE_SELECTION")<TypeAheadSelectDirection>();
 export const reset = createAction("typeahead/RESET");
@@ -20,6 +21,13 @@ export const queryVertexMatch = (textQuery: string): ThunkAction<void, GlobalSta
   getState
 ) => {
   await dispatch(queryVertexMatchAsync.request(textQuery));
-  const results = await findMatchingVertices(textQuery);
-  await dispatch(queryVertexMatchAsync.success(results));
+  let results: Vertex[];
+  try {
+    results = await findMatchingVertices(textQuery);
+  } catch (error) {
+    dispatch(queryVertexMatchAsync.failure(error));
+    dispatch(rootOnError(error, undefined));
+    return;
+  }
+  dispatch(queryVertexMatchAsync.success(results));
 };

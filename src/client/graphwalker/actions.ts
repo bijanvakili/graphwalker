@@ -6,6 +6,7 @@ import { getVertexIdHash } from "./selectors";
 import { GlobalState } from "./reducers";
 import { Neighborhood, RenderSettings } from "./models/Graphwalker";
 import { getVertexNeighborhood } from "../api";
+import { onError as rootOnError } from "../errorview/actions";
 
 export const onSettingsLoaded = createStandardAction("graphwalker/ON_SETTINGS_LOADED")<RenderSettings>();
 
@@ -27,10 +28,18 @@ export const queryNeighborhood = (vertexId: string): ThunkAction<void, GlobalSta
   dispatch,
   getState
 ) => {
-  // TODO why is this request not dispatching?
-  await dispatch(queryNeighborhoodAsync.request);
-  const neighborhood = await getVertexNeighborhood(vertexId);
-  await dispatch(queryNeighborhoodAsync.success(neighborhood));
+  dispatch(queryNeighborhoodAsync.request(vertexId));
+
+  let neighborhood: Neighborhood;
+  try {
+    neighborhood = await getVertexNeighborhood(vertexId);
+  } catch (error) {
+    dispatch(queryNeighborhoodAsync.failure(error));
+    dispatch(rootOnError(error, undefined));
+    return;
+  }
+
+  dispatch(queryNeighborhoodAsync.success(neighborhood));
 };
 
 interface VertexScrollParameters {

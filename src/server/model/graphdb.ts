@@ -6,8 +6,8 @@ import fetch from "node-fetch";
 
 import { URLSearchParams } from "url";
 
-interface QueryResponse {
-  result?: any[];
+interface QueryResponse<T> {
+  result?: T[];
   error?: string;
 }
 
@@ -57,7 +57,7 @@ export class CayleyDBClient {
       },
       body: query,
     });
-    const json: QueryResponse = await response.json();
+    const json: QueryResponse<T> = await response.json();
 
     if (json.error) {
       throw Error(json.error);
@@ -66,6 +66,6 @@ export class CayleyDBClient {
     if (json.result) {
       enforceHashIdPrimaryKey(json.result);
     }
-    return json.result as T[];
+    return json.result;
   }; // tslint:disable-line:semicolon
 }

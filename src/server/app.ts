@@ -2,6 +2,7 @@ import * as path from "path";
 import express from "express";
 import bodyParser from "body-parser";
 import { ApolloServer } from "apollo-server-express";
+import apolloServerPluginResponseCache from "apollo-server-plugin-response-cache";
 import { CayleyDBClient } from "./model/graphdb";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
@@ -30,6 +31,7 @@ const server = new ApolloServer({
       dbClient: new CayleyDBClient(),
     };
   },
+  plugins: [apolloServerPluginResponseCache()],
 });
 
 server.applyMiddleware({ app, path: "/graphql" });

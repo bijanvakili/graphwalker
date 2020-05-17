@@ -21,10 +21,21 @@ them can be overwhelming.
 - Provides reproducible navigation via:
   - Clicking on vertices within the current view
   - Type ahead search for vertex properties
-- HTML5 SVG display for easier export and scaling
-- [Generalized JSON format](./docs/data_format.md) that is not application specific
+- HTML5 SVG display scaling
+- Cayley Graph database for incremental traversal of large graphs
+- GraphQL API for vertex queries
 
-## Graph Data
+## Requirements
+
+You will need to install the following locally:
+
+- [Docker](https://www.docker.com/) v19+
+- [node.js](https://nodejs.org/) v6+
+- [yarn](https://yarnpkg.com/en/) v0.24+
+
+## Graph Database
+
+### Graph Data
 
 Currently, only the following project creates valid RDF graphs for this project:
 
@@ -32,7 +43,30 @@ Currently, only the following project creates valid RDF graphs for this project:
 
 All graph data is stored in Cayley DB. This project runs Cayley in a Docker container.
 
-## Configuration
+### Load Data
+
+NOTE: Database must be initially _shut down_.
+
+Copy your Cayley DB import file into the `./data` folder (e.g. `filename.nq.gz`) and
+run the following Docker command:
+
+    docker-compose run --rm --entrypoint "cayley load -i /import/filename.nq.gz" db
+
+### Volume Inspection
+
+To or manipulate the Cayley DB files, run the following:
+
+    docker-compose run --rm shell
+
+### Running
+
+You can start the Cayley graph database using Docker as follows:
+
+    docker-compose up -d db
+
+## Web Application
+
+### Configuration
 
 Edit `etc/render_settings.json` to specify how to displays your graph data
 
@@ -46,35 +80,9 @@ Edit `etc/render_settings.json` to specify how to displays your graph data
 }
 ```
 
-## Load Data
-
-NOTE: Database must be _shut down_.
-
-Copy your Cayley DB import file into the `./data` folder (e.g. `filename.nq.gz`) and
-run the following Docker command:
-
-```bash
-docker-compose run --rm --entrypoint "cayley load -i /import/filename.nq.gz" db
-```
-
-## Volume Inspection
-
-To or manipulate the Cayley DB files, run the following:
-
-```bash
-docker-compose run --rm shell
-```
-
-## Running locally
-
-You'll only need to install the following:
-
-- [node.js](https://nodejs.org/) v6+
-- [yarn](https://yarnpkg.com/en/) v0.24+
-
 ### Building
 
-Run the following to install all the necessary build dependencies using `yarn` and runtime dependencies using [`webpack`](https://webpack.github.io/).
+Run the following to install all the necessary build dependencies using `yarn`:
 
     yarn install
 
@@ -86,11 +94,13 @@ Run the following to build and bundle all Javascript code into the `./dist` subd
 
 Then run the following to run the web server:
 
-    yarn run web
+    GRAPHWALKER_RENDER_SETTINGS=etc/render_settings.json yarn run web
 
 Finally, open the following URL in your web browser:
 
     open http://localhost:9080/
+
+## Local Development
 
 ### Running a Test server
 
@@ -100,15 +110,19 @@ Finally, open the following URL in your web browser:
 
 This will run multiple watch windows for both client and server.
 
-### Local Development
+### git hooks
 
 Set up the git pre-commit hook as follows:
 
-```sh
-  ln -s ../../scripts/pre-commit .git/hooks/pre-commit
-```
+    ln -s ../../scripts/pre-commit .git/hooks/pre-commit
 
-#### Cleanup
+### GraphQL testing
+
+Open up the following to use the Apollo GraphQL playground, an interactive and in-browser GraphQL IDE
+
+    open http://localhost:9080/graphql
+
+## Cleanup
 
 To remove build files, run the following:
 

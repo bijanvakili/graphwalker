@@ -44,7 +44,15 @@ WINDOW_NAME='frontend'
 $TMUX new-window -n $WINDOW_NAME
 exec_yarn_script $WINDOW_NAME 'watch-build-client'
 
-# start a new window for executing any
+# TODO add pane for watching graphwalker-renderer package
+if [ -d "${RENDERER_PATH}" ]; then
+  $TMUX split-window -t 0 -h
+
+  $TMUX send-keys -t $WINDOW_NAME "cd ${RENDERER_PATH}" C-m
+  exec_yarn_script $WINDOW_NAME 'build:watch'
+fi
+
+# start a new window for executing any ad-hoc commands
 WINDOW_NAME='ad-hoc'
 $TMUX new-window -n $WINDOW_NAME
 exec_yarn_script $WINDOW_NAME 'todos'

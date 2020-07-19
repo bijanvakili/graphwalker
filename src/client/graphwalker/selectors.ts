@@ -2,7 +2,7 @@ import { createSelector } from "reselect";
 
 import { IncidentEdgeDirection, VertexScrollDirection } from "./constants";
 import { GraphViewState, IncidentEdgeMetrics, IncidentEdgeFlags } from "./models/GraphViewState";
-import { Neighborhood } from "./models/Graphwalker";
+import { Edge, Neighborhood, Vertex } from "./models/Graphwalker";
 
 const getVertexNeighborhood = (state: GraphViewState): Neighborhood | undefined => state.neighborhood;
 const getCurrentScrollPositions = (state: GraphViewState) => state.currentScrollPositions;
@@ -24,16 +24,34 @@ interface IncidentEdgeDescriptions {
   [IncidentEdgeDirection.Outgoing]: string;
 }
 
+interface IncidentEdges {
+  [IncidentEdgeDirection.Incoming]: Edge[];
+  [IncidentEdgeDirection.Outgoing]: Edge[];
+}
+
+const getIncidentEdges = createSelector(
+  getVertexNeighborhood,
+  (neighborhood?: Neighborhood): IncidentEdges => {
+    if (!neighborhood) {
+      throw new Error("getIncidentEdges called before full initialization");
+    }
+
+    const edges = neighborhood.edges || [];
+
+    return {
+      [IncidentEdgeDirection.Incoming]: edges.filter((e) => e.dest === neighborhood.id),
+      [IncidentEdgeDirection.Outgoing]: edges.filter((e) => e.source === neighborhood.id),
+    };
+  }
+);
+
 // counts the total number of edges in a direction for a vertex
 export const getIncidentEdgeCounts = createSelector(
-  getVertexNeighborhood,
-  (neighborhood?: Neighborhood): IncidentEdgeMetrics => {
-    if (!neighborhood) {
-      throw new Error("getIncidentEdgeCounts called before full initialization");
-    }
+  getIncidentEdges,
+  (incidentEdges: IncidentEdges): IncidentEdgeMetrics => {
     return {
-      [IncidentEdgeDirection.Incoming]: (neighborhood.incoming || []).length,
-      [IncidentEdgeDirection.Outgoing]: (neighborhood.outgoing || []).length,
+      [IncidentEdgeDirection.Incoming]: incidentEdges[IncidentEdgeDirection.Incoming].length,
+      [IncidentEdgeDirection.Outgoing]: incidentEdges[IncidentEdgeDirection.Outgoing].length,
     };
   }
 );
@@ -107,3 +125,15 @@ export function extractVertexIdFromHash(s: string) {
 export function getVertexIdHash(vertexId: string) {
   return `#/vertex/${vertexId}`;
 }
+
+export const getVertexRenderData = (v: Vertex) => ({
+  id: v.id,
+  label: v.modelName,
+});
+
+export const getEdgeRenderData = (e: Edge) => ({
+  id: e.id,
+  label: e.label,
+  source: e.source,
+  dest: e.dest,
+});

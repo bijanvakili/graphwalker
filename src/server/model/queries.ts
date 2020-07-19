@@ -69,20 +69,52 @@ results.forEach(function(r) {
 `;
 };
 
-// TODO move this to shared library
-export enum IncidentEdgeDirection {
-  Incoming = "incoming",
-  Outgoing = "outgoing",
-}
+export const findNeighborVertices = (hashId: string) => {
+  return `
+${morphModelProps}
 
-export const findNeighbors = (hashId: string, edgeDirection: IncidentEdgeDirection) => {
-  let subjectPath: string;
-  if (edgeDirection === IncidentEdgeDirection.Incoming) {
-    subjectPath = "out";
-  } else {
-    subjectPath = "in";
-  }
+${morphFilterTarget(hashId)}
 
+g.V()
+.follow(morphFilterTarget)
+.has("<subject_type>", "/gw/crumb")
+.follow(morphModelProps)
+.forEach(function(v) {
+  g.emit(v);
+});
+
+var incomingVertices = g.V()
+ .has("<subject_type>", "/gw/crumb")
+ .tag("vertex_detail_id")
+ .out("</gw/flow>")
+ .follow(morphFilterTarget)
+ .back()
+
+var outgoingVertices = g.V()
+ .has("<subject_type>", "/gw/crumb")
+ .tag("vertex_detail_id")
+ .in("</gw/flow>")
+ .follow(morphFilterTarget)
+ .back()
+
+incomingVertices
+ .unique()
+ .follow(morphModelProps)
+ .forEach(function(v) {
+  g.emit(v);
+ });
+
+outgoingVertices
+ .unique()
+ .follow(morphModelProps)
+ .forEach(function(v) {
+  g.emit(v);
+ });
+
+`;
+};
+
+export const findNeighborEdges = (hashId: string) => {
   return `
 ${morphModelProps}
 
@@ -99,29 +131,35 @@ var allRelationEdges = g.V()
  .has("<subject_type>", "/gw/flow/detail")
  .tag("edge_detail_id");
 
-var results = [];
-
 var incomingEdges = allRelationEdges
- .${subjectPath}("</gw/flow/detail>")
+ .out("</gw/flow/detail>")
  .follow(morphFilterTarget)
+ .save("<hash_id>", "dest")
  .back("edge_detail_id")
- .follow(morphEdgeProps)
- .forEach(function(edgeData) {
-   results.push({"edge": edgeData});
- });
+ .in()
+ .save("<hash_id>", "source")
 
-results.forEach(function(result) {
-  g.V(result["edge"]["edge_detail_id"])
-   .${subjectPath === "out" ? "in" : "out"}("</gw/flow/detail>")
-   .follow(morphModelProps)
-   .forEach(function(modelData) {
-	  result["other"] = modelData;
-   });
-  delete result["edge"]["edge_detail_id"];
-});
+var outgoingEdges = allRelationEdges
+  .in("</gw/flow/detail>")
+  .follow(morphFilterTarget)
+  .save("<hash_id>", "source")
+  .back("edge_detail_id")
+  .out()
+  .save("<hash_id>", "dest")
 
-results.forEach(function(result) {
-  g.emit(result);
-});
+incomingEdges
+  .back("edge_detail_id")
+  .follow(morphEdgeProps)
+  .forEach(function(e) {
+    g.emit(e);
+  });
+
+outgoingEdges
+  .back("edge_detail_id")
+  .follow(morphEdgeProps)
+  .forEach(function(e) {
+    g.emit(e);
+  });
+
 `;
 };

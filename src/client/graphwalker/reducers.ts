@@ -21,7 +21,7 @@ const graphViewReducer = createReducer<GraphViewState>({
   .handleAction(actions.queryNeighborhoodAsync.success, (state, action) => ({
     ...state,
     neighborhood: action.payload,
-    currentVertexId: action.payload.vertex.id,
+    currentVertexId: action.payload.id,
     currentScrollPositions: {
       [IncidentEdgeDirection.Incoming]: 0,
       [IncidentEdgeDirection.Outgoing]: 0,

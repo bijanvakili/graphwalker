@@ -8,7 +8,7 @@ import { GlobalState } from "../reducers";
 import VertexPaginatorContainer from "./VertexPaginatorContainer";
 import { selectVertex } from "../actions";
 import { SubgraphRenderComponent } from "../components/SubgraphRenderComponent";
-import { VertexSelectedCallback } from "../components/SubgraphRenderer";
+import { ItemSelectedCallback } from "graphwalker-renderer";
 import { IncidentEdgeMetrics, IncidentEdgeFlags } from "../models/GraphViewState";
 import { getIncidentEdgeCounts } from "../selectors";
 
@@ -23,7 +23,7 @@ interface NeighborhoodContainerMappedProps {
 }
 
 interface NeighborHoodContainerDispatchProps {
-  selectVertex: VertexSelectedCallback;
+  selectVertex: ItemSelectedCallback;
 }
 
 type NeighborhoodContainerProps = NeighborhoodContainerMappedProps & NeighborHoodContainerDispatchProps;

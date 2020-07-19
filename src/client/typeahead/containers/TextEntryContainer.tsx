@@ -62,7 +62,7 @@ const TextEntryContainer: React.FC<TextEntryContainerProps> = (props: TextEntryC
 
     const vertexId = results[currentSelection].id;
     props.selectVertex(vertexId);
-    // tslint:disable:align
+    // tslint:disable-next-line:align
   }, [props.currentSelection, props.results, props.selectVertex]);
 
   const onKeyUp = useDebouncedKeyboardCallback(

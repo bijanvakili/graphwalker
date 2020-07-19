@@ -8,6 +8,8 @@ type Vertex {
 # single edge details
 type Edge {
   id: String! # hash ID
+  source: String! # hash ID
+  dest: String! # hash ID
   fieldType: String!
   fieldName: String
   multiplicity: String
@@ -15,16 +17,10 @@ type Edge {
 }
 
 # grouping of a vertex connected to a target via an edge
-type AdjacentVertex {
-  other: Vertex!
-  edge: Edge!
-}
-
 type Neighborhood {
   id: String! # same hash id as the vertex
-  vertex: Vertex!
-  incoming: [AdjacentVertex!]!
-  outgoing: [AdjacentVertex!]!
+  vertices: [Vertex!]!
+  edges: [Edge!]!
 }
 
 type VertexImage {
@@ -37,7 +33,7 @@ type VertexImage {
 type RenderSettings {
   startVertexId: String!
   vertexColumnPageSize: Int!
-  images: [VertexImage!]
+  images: [VertexImage!]!
 }
 
 # read operations for this API

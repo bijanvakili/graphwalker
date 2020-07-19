@@ -34,36 +34,22 @@ const QUERY_CLIENT_SETTINGS = gql`
 `;
 
 const QUERY_NEIGHBORHOOD = gql`
-  fragment VertexParts on Vertex {
-    id
-    fullyQualifiedModelName
-    modelName
-  }
-
-  fragment AdjacentVertexParts on AdjacentVertex {
-    other {
-      ...VertexParts
-    }
-    edge {
-      id
-      label
-      fieldType
-      fieldName
-      multiplicity
-    }
-  }
-
   query($id: String!) {
     neighborhood(id: $id) {
       id
-      vertex {
-        ...VertexParts
+      vertices {
+        id
+        fullyQualifiedModelName
+        modelName
       }
-      incoming {
-        ...AdjacentVertexParts
-      }
-      outgoing {
-        ...AdjacentVertexParts
+      edges {
+        id
+        source
+        dest
+        label
+        fieldType
+        fieldName
+        multiplicity
       }
     }
   }

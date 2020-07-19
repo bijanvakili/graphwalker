@@ -1,1 +1,9 @@
+.prettierignore
+yarn.lock
 node_modules/
+scripts/
+dist/
+tmp/
+
+src/server/graphwalker/types.ts
+src/client/graphwalker/models/Graphwalker.ts

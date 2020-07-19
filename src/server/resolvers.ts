@@ -5,13 +5,13 @@ import { GraphQLResolveInfo } from "graphql";
 
 import { ResourceNotFoundError } from "./errors";
 import {
+  Edge,
   Vertex,
-  AdjacentVertex,
   RenderSettings,
   QueryVertexMatchArgs,
   QueryNeighborhoodArgs,
 } from "./graphwalker/types";
-import { getVertexByHashId, searchVertices, findNeighbors, IncidentEdgeDirection } from "./model/queries";
+import { getVertexByHashId, searchVertices, findNeighborVertices, findNeighborEdges } from "./model/queries";
 import { AppContext } from "./app";
 
 const readFileAsync = promisify(readFile);
@@ -28,7 +28,21 @@ export default {
       return (await context.dbClient.queryGizmo<Vertex>(query)) || [];
     },
 
-    neighborhood: (_: void, queryRequest: QueryNeighborhoodArgs): QueryNeighborhoodArgs => queryRequest,
+    neighborhood: async (
+      _: void,
+      queryRequest: QueryNeighborhoodArgs,
+      context: AppContext
+    ): Promise<Vertex> => {
+      // return a single vertex as the parent result to ensure it exists
+      // for subqueries
+      const query = getVertexByHashId(queryRequest.id);
+
+      const results = await context.dbClient.queryGizmo<Vertex>(query);
+      if (!results) {
+        throw new ResourceNotFoundError(`Vertex not found: ${queryRequest.id}`);
+      }
+      return results[0];
+    },
 
     settings: async (
       parent: QueryNeighborhoodArgs,
@@ -47,34 +61,20 @@ export default {
     },
   },
   Neighborhood: {
-    vertex: async (parent: QueryNeighborhoodArgs, _: void, context: AppContext): Promise<Vertex> => {
-      const query = getVertexByHashId(parent.id);
-
-      const results = await context.dbClient.queryGizmo<Vertex>(query);
-      if (!results) {
-        throw new ResourceNotFoundError(`Vertex not found: ${parent.id}`);
-      }
-      return results[0];
+    id: (parent: QueryNeighborhoodArgs, _: void, context: AppContext): string => {
+      return parent.id;
     },
 
-    incoming: async (
-      parent: QueryNeighborhoodArgs,
-      _: void,
-      context: AppContext
-    ): Promise<AdjacentVertex[]> => {
-      const query = findNeighbors(parent.id, IncidentEdgeDirection.Incoming);
+    vertices: async (parent: QueryNeighborhoodArgs, _: void, context: AppContext): Promise<Vertex[]> => {
+      const query = findNeighborVertices(parent.id);
 
-      return (await context.dbClient.queryGizmo<AdjacentVertex>(query)) || [];
+      return (await context.dbClient.queryGizmo<Vertex>(query)) || [];
     },
 
-    outgoing: async (
-      parent: QueryNeighborhoodArgs,
-      _: void,
-      context: AppContext
-    ): Promise<AdjacentVertex[]> => {
-      const query = findNeighbors(parent.id, IncidentEdgeDirection.Outgoing);
+    edges: async (parent: QueryNeighborhoodArgs, _: void, context: AppContext): Promise<Edge[]> => {
+      const query = findNeighborEdges(parent.id);
 
-      return (await context.dbClient.queryGizmo<AdjacentVertex>(query)) || [];
+      return (await context.dbClient.queryGizmo<Edge>(query)) || [];
     },
   },
 };

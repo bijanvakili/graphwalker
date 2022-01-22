@@ -19,7 +19,7 @@
     "graphql": "^14.6.0",
     "graphwalker-renderer": "ssh://git@github.com:bijanvakili/graphwalker-renderer.git#b412aed",
     "lodash": "^4.17.15",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^7.1.0",
